@@ -1,0 +1,1951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GHM — Business Control Centre</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0a0a0b; --surface:#111113; --surface2:#18181c; --surface3:#1f1f25;
+  --border:#252529; --border2:#2e2e35; --text:#e8e8ee; --muted:#666672; --muted2:#44444d;
+  --green:#00d48a; --green-dim:rgba(0,212,138,0.12);
+  --orange:#ff6b2b; --orange-dim:rgba(255,107,43,0.12);
+  --blue:#3d9bff; --blue-dim:rgba(61,155,255,0.12);
+  --yellow:#f5c518; --yellow-dim:rgba(245,197,24,0.12);
+  --red:#ff4444; --red-dim:rgba(255,68,68,0.12);
+  --purple:#a78bfa; --pink:#f472b6; --teal:#2dd4bf;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; font-size:14px; line-height:1.5; min-height:100vh; }
+.app { display:flex; min-height:100vh; }
+.sidebar { width:220px; flex-shrink:0; background:var(--surface); border-right:1px solid var(--border); display:flex; flex-direction:column; padding:24px 0; position:sticky; top:0; height:100vh; overflow-y:auto; }
+.logo { padding:0 20px 24px; border-bottom:1px solid var(--border); margin-bottom:16px; }
+.logo-mark { font-family:Bebas Neue,sans-serif; font-size:22px; letter-spacing:2px; color:var(--green); line-height:1; }
+.logo-sub { font-family:DM Mono,monospace; font-size:9px; letter-spacing:2px; color:var(--muted); text-transform:uppercase; margin-top:2px; }
+.nav-label { font-family:DM Mono,monospace; font-size:9px; letter-spacing:2px; color:var(--muted2); text-transform:uppercase; padding:12px 20px 6px; }
+.nav-item { display:flex; align-items:center; gap:10px; padding:9px 20px; cursor:pointer; color:var(--muted); font-size:13px; font-weight:500; transition:all 0.15s; border-left:2px solid transparent; user-select:none; }
+.nav-item:hover { color:var(--text); background:var(--surface2); }
+.nav-item.active { color:var(--green); border-left-color:var(--green); background:var(--green-dim); }
+.nav-icon { font-size:15px; width:18px; text-align:center; }
+.sidebar-footer { margin-top:auto; padding:16px 20px; border-top:1px solid var(--border); display:flex; flex-direction:column; gap:8px; }
+.action-btn { width:100%; background:var(--surface2); border:1px dashed var(--border2); color:var(--muted); padding:10px 12px; border-radius:8px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:500; text-align:center; transition:all 0.2s; }
+.action-btn:hover { border-color:var(--green); color:var(--green); background:var(--green-dim); }
+.action-btn.danger { border-color:rgba(255,68,68,0.4); color:var(--red); }
+.action-btn.danger:hover { border-color:var(--red); background:var(--red-dim); }
+.mobile-nav { display:none; background:var(--surface); border-bottom:1px solid var(--border); padding:8px 12px; gap:4px; flex-wrap:wrap; position:sticky; top:0; z-index:100; }
+.mob-btn { background:var(--surface2); border:1px solid var(--border); color:var(--muted); padding:6px 10px; border-radius:6px; cursor:pointer; font-family:DM Mono,monospace; font-size:10px; letter-spacing:1px; transition:all 0.15s; white-space:nowrap; }
+.mob-btn:hover { color:var(--text); }
+.mob-btn.active { color:var(--green); border-color:var(--green); background:var(--green-dim); }
+.main { flex:1; overflow-x:hidden; padding:28px 28px 60px; }
+.page-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:12px; }
+.page-title { font-family:Bebas Neue,sans-serif; font-size:36px; letter-spacing:2px; line-height:1; }
+.page-title span { color:var(--green); }
+.week-controls { display:flex; align-items:center; gap:8px; }
+.wk-btn { background:var(--surface2); border:1px solid var(--border); color:var(--muted); width:32px; height:32px; border-radius:6px; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; transition:all 0.15s; }
+.wk-btn:hover { border-color:var(--green); color:var(--green); }
+.wk-label { font-family:DM Mono,monospace; font-size:11px; color:var(--muted); min-width:160px; text-align:center; background:var(--surface2); border:1px solid var(--border); padding:6px 12px; border-radius:6px; }
+.page { display:none; }
+.kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(155px,1fr)); gap:12px; margin-bottom:16px; }
+.kpi { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px; position:relative; overflow:hidden; }
+.kpi-accent { position:absolute; top:0; left:0; right:0; height:2px; }
+.kpi-label { font-family:DM Mono,monospace; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:10px; }
+.kpi-value { font-family:Bebas Neue,sans-serif; font-size:28px; letter-spacing:1px; line-height:1; }
+.kpi-sub { font-family:DM Mono,monospace; font-size:9px; color:var(--muted); margin-top:4px; }
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-bottom:16px; }
+.card-head { display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid var(--border); }
+.card-title { font-family:DM Mono,monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); }
+.card-body { padding:16px; }
+.rev-row { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.rev-label { font-size:12px; font-weight:500; min-width:110px; color:var(--text); }
+.rev-bar-wrap { flex:1; height:6px; background:var(--surface3); border-radius:3px; overflow:hidden; }
+.rev-bar { height:100%; border-radius:3px; transition:width 0.5s ease; }
+.rev-amount { font-family:DM Mono,monospace; font-size:11px; color:var(--text); min-width:65px; text-align:right; }
+.rev-pct { font-family:DM Mono,monospace; font-size:10px; color:var(--muted); min-width:32px; text-align:right; }
+.cat-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.cat-card { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:12px; }
+.cat-name { font-size:11px; font-weight:600; color:var(--text); margin-bottom:2px; display:flex; align-items:center; gap:6px; }
+.cat-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+.cat-revenue { font-family:Bebas Neue,sans-serif; font-size:20px; letter-spacing:1px; line-height:1.2; }
+.cat-meta { font-family:DM Mono,monospace; font-size:9px; color:var(--muted); margin-top:4px; }
+.cat-bar-wrap { height:3px; background:var(--surface3); border-radius:2px; margin-top:8px; overflow:hidden; }
+.cat-bar { height:100%; border-radius:2px; }
+.badge { display:inline-block; padding:2px 7px; border-radius:4px; font-family:DM Mono,monospace; font-size:9px; letter-spacing:1px; text-transform:uppercase; }
+.best-badge { background:var(--green-dim); color:var(--green); border:1px solid rgba(0,212,138,0.2); }
+.income-entry { display:grid; grid-template-columns:1fr 100px 110px 100px 28px; gap:8px; align-items:center; padding:8px 0; border-bottom:1px solid var(--border); }
+.income-entry:last-child { border-bottom:none; }
+.ie-input, .ie-select, .cost-input, .cost-cat-select { background:var(--surface2); border:1px solid var(--border); color:var(--text); padding:7px 9px; border-radius:6px; font-family:'DM Sans',sans-serif; font-size:12px; outline:none; transition:border-color 0.15s; width:100%; }
+.ie-input:focus, .cost-input:focus { border-color:var(--green); }
+.ie-select, .cost-cat-select { cursor:pointer; font-size:11px; }
+.del-btn, .cost-del { background:none; border:none; color:var(--muted2); cursor:pointer; font-size:14px; transition:color 0.15s; padding:2px 4px; }
+.del-btn:hover, .cost-del:hover { color:var(--red); }
+.add-row-btn { background:var(--surface2); border:1px dashed var(--border2); color:var(--muted); padding:8px; border-radius:6px; cursor:pointer; font-family:DM Mono,monospace; font-size:10px; letter-spacing:1px; width:100%; margin-top:10px; transition:all 0.15s; }
+.add-row-btn:hover { border-color:var(--green); color:var(--green); }
+.cost-row { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--border); }
+.cost-row:last-child { border-bottom:none; }
+.cost-name { flex:1; font-size:13px; font-weight:500; }
+.cost-amount { font-family:DM Mono,monospace; font-size:12px; color:var(--orange); }
+.add-cost-form { display:grid; grid-template-columns:auto 1fr auto auto; gap:8px; margin-top:12px; align-items:center; }
+.add-cost-btn { background:var(--green); border:none; color:#000; padding:7px 14px; border-radius:6px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:600; }
+.add-cost-btn:hover { opacity:0.85; }
+.vat-strip { background:linear-gradient(135deg,rgba(245,197,24,0.08),rgba(245,197,24,0.03)); border:1px solid rgba(245,197,24,0.2); border-radius:10px; padding:16px 20px; display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:16px; margin-bottom:16px; }
+.vat-item-label { font-family:DM Mono,monospace; font-size:9px; letter-spacing:2px; color:var(--muted); text-transform:uppercase; margin-bottom:4px; }
+.vat-item-value { font-family:Bebas Neue,sans-serif; font-size:22px; letter-spacing:1px; color:var(--yellow); }
+.vat-toggle-wrap { position:relative; display:inline-block; width:36px; height:20px; flex-shrink:0; }
+.vat-toggle-input { opacity:0; width:0; height:0; position:absolute; }
+.vat-toggle-slider { position:absolute; inset:0; background:var(--surface3); border:1px solid var(--border2); border-radius:20px; cursor:pointer; transition:all 0.2s; }
+.vat-toggle-slider::before { content:''; position:absolute; width:14px; height:14px; left:2px; top:2px; background:var(--muted); border-radius:50%; transition:all 0.2s; }
+.vat-toggle-input:checked + .vat-toggle-slider { background:var(--green-dim); border-color:var(--green); }
+.vat-toggle-input:checked + .vat-toggle-slider::before { background:var(--green); transform:translateX(16px); }
+.hist-table { width:100%; border-collapse:collapse; font-size:12px; }
+.hist-table th { font-family:DM Mono,monospace; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); padding:10px 12px; text-align:left; border-bottom:1px solid var(--border); }
+.hist-table td { padding:10px 12px; border-bottom:1px solid var(--border); font-family:DM Mono,monospace; font-size:11px; }
+.hist-table tr:last-child td { border-bottom:none; }
+.hist-table tr:hover td { background:var(--surface2); }
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1000; display:none; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+.modal-overlay.open { display:flex; }
+.modal { background:var(--surface); border:1px solid var(--border2); border-radius:14px; padding:28px; width:540px; max-width:95vw; max-height:90vh; overflow-y:auto; }
+.modal-title { font-family:Bebas Neue,sans-serif; font-size:24px; letter-spacing:2px; margin-bottom:6px; }
+.modal-sub { font-size:12px; color:var(--muted); margin-bottom:20px; line-height:1.6; }
+.drop-zone { border:2px dashed var(--border2); border-radius:10px; padding:32px; text-align:center; cursor:pointer; transition:all 0.2s; margin-bottom:16px; }
+.drop-zone:hover { border-color:var(--green); background:var(--green-dim); }
+.modal-info { background:var(--surface2); border:1px solid var(--border); border-left:3px solid var(--blue); border-radius:6px; padding:12px 14px; font-family:DM Mono,monospace; font-size:10px; color:var(--muted); line-height:1.8; margin-bottom:16px; }
+.modal-btns { display:flex; gap:8px; justify-content:flex-end; margin-top:16px; }
+.btn-cancel { background:var(--surface2); border:1px solid var(--border); color:var(--muted); padding:9px 18px; border-radius:7px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; }
+.btn-cancel:hover { color:var(--text); }
+.btn-primary { background:var(--green); border:none; color:#000; padding:9px 18px; border-radius:7px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; }
+.btn-danger { background:var(--red); border:none; color:#fff; padding:9px 18px; border-radius:7px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:600; opacity:0.4; transition:opacity 0.15s; }
+@keyframes spin{to{transform:rotate(360deg)}} @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}} ::-webkit-scrollbar { width:4px; } ::-webkit-scrollbar-track { background:transparent; } ::-webkit-scrollbar-thumb { background:var(--border2); border-radius:2px; }
+@media (max-width:900px) { .sidebar{display:none;} .mobile-nav{display:flex;} .grid-2{grid-template-columns:1fr;} .vat-strip{grid-template-columns:1fr 1fr;} .income-entry{grid-template-columns:1fr 90px 80px 24px;} }
+@media (max-width:540px) { .main{padding:16px 14px 60px;} .kpi-grid{grid-template-columns:1fr 1fr;} .vat-strip{grid-template-columns:1fr 1fr;} }
+</style>
+</head>
+<body>
+<div class="app">
+
+<aside class="sidebar">
+  <div class="logo"><div class="logo-mark">GHM<br>CONTROL</div><div class="logo-sub">Business Centre</div></div>
+  <div class="nav-label">Control</div>
+  <div class="nav-item" data-page="hub"><span class="nav-icon">◈</span> Overview</div>
+  <div class="nav-item" data-page="shutter"><span class="nav-icon">⬛</span> Shutter</div>
+  <div class="nav-item" data-page="cameras"><span class="nav-icon">◉</span> Cameras</div>
+  <div class="nav-item" data-page="lights"><span class="nav-icon">◎</span> Lighting</div>
+  <div class="nav-item" data-page="environment"><span class="nav-icon">〜</span> Environment</div>
+  <div class="nav-item" data-page="staff"><span class="nav-icon">⚇</span> Staff & Holiday</div>
+  <div class="nav-label">Finance</div>
+  <div class="nav-item" data-page="overview"><span class="nav-icon">↗</span> Finance</div>
+  <div class="nav-item" data-page="income"><span class="nav-icon">↑</span> Income</div>
+  <div class="nav-item" data-page="costs"><span class="nav-icon">↓</span> Costs</div>
+  <div class="nav-item" data-page="recurring"><span class="nav-icon">↻</span> Recurring</div>
+  <div class="nav-item" data-page="performance"><span class="nav-icon">◎</span> Performance</div>
+  <div class="nav-item" data-page="tax"><span class="nav-icon">£</span> Tax</div>
+  <div class="nav-item" data-page="breakeven"><span class="nav-icon">◐</span> Break-Even</div>
+  <div class="nav-item" data-page="history"><span class="nav-icon">≡</span> History</div>
+  <div class="nav-item" data-page="capital"><span class="nav-icon">⬡</span> Capital Items</div>
+  <div class="nav-item" data-page="acquisition"><span class="nav-icon">⊕</span> Acquisition Costs</div>
+  <div class="sidebar-footer">
+    <button class="action-btn" id="btn-open-import">⬆ Import Motasoft CSV</button>
+    <button class="action-btn danger" id="btn-open-reset">✕ Clear All Data</button>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="mobile-nav">
+    <button class="mob-btn" data-page="hub">◈ Hub</button>
+    <button class="mob-btn" data-page="shutter">⬛ Shutter</button>
+    <button class="mob-btn" data-page="cameras">◉ Cameras</button>
+    <button class="mob-btn" data-page="lights">◎ Lights</button>
+    <button class="mob-btn" data-page="environment">〜 Env</button>
+    <button class="mob-btn" data-page="staff">⚇ Holiday</button>
+    <button class="mob-btn" data-page="overview">↗ Finance</button>
+    <button class="mob-btn" data-page="income">↑ Income</button>
+    <button class="mob-btn" data-page="costs">↓ Costs</button>
+    <button class="mob-btn" data-page="recurring">↻ Recurring</button>
+    <button class="mob-btn" data-page="tax">£ Tax</button>
+    <button class="mob-btn" data-page="breakeven">◐ Break-Even</button>
+    <button class="mob-btn" data-page="history">≡ History</button>
+    <button class="mob-btn" data-page="capital">⬡ Capital</button>
+    <button class="mob-btn" data-page="acquisition">⊕ Acquisition</button>
+    <button class="mob-btn" id="mob-import-btn" style="border-style:dashed">⬆ Import</button>
+    <button class="mob-btn" id="mob-reset-btn" style="border-style:dashed;color:var(--red)">✕ Clear</button>
+  </div>
+
+  <div class="page-header">
+    <div class="page-title" id="main-title">GHM <span>CONTROL</span></div>
+    <div class="week-controls">
+      <button class="wk-btn" id="wk-prev">‹</button>
+      <div class="wk-label" id="weekLabel">–</div>
+      <button class="wk-btn" id="wk-next">›</button>
+    </div>
+  </div>
+
+
+  <!-- HUB — unified overview -->
+  <div class="page" id="page-hub">
+
+    <!-- Status strip -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px">
+      <div class="kpi"><div class="kpi-accent" style="background:var(--green)"></div><div class="kpi-label">Shutter</div><div class="kpi-value" style="color:var(--green)" id="hub-shutter-val">OPEN</div><div class="kpi-sub" id="hub-shutter-sub">100% open</div></div>
+      <div class="kpi"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-label">Cameras</div><div class="kpi-value" style="color:var(--blue)">4 / 4</div><div class="kpi-sub">all online</div></div>
+      <div class="kpi"><div class="kpi-accent" style="background:var(--yellow)"></div><div class="kpi-label">Lights on</div><div class="kpi-value" style="color:var(--yellow)" id="hub-lights-val">3 / 6</div><div class="kpi-sub">zones active</div></div>
+      <div class="kpi"><div class="kpi-accent" style="background:var(--green)"></div><div class="kpi-label">Alarm</div><div class="kpi-value" style="color:var(--green)">DISARMED</div><div class="kpi-sub">site occupied</div></div>
+      <div class="kpi"><div class="kpi-accent" style="background:var(--green)"></div><div class="kpi-label">Revenue (wk)</div><div class="kpi-value" style="color:var(--green)" id="hub-revenue">£0</div><div class="kpi-sub">excl. VAT</div></div>
+      <div class="kpi"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-label">Net Profit (wk)</div><div class="kpi-value" id="hub-profit" style="color:var(--blue)">£0</div><div class="kpi-sub">after all costs</div></div>
+      <div class="kpi"><div class="kpi-accent" style="background:var(--yellow)"></div><div class="kpi-label">VAT to move</div><div class="kpi-value" style="color:var(--yellow)" id="hub-vat">£0</div><div class="kpi-sub">this week</div></div>
+      <div class="kpi"><div class="kpi-accent" style="background:var(--orange)"></div><div class="kpi-label">Total reserves</div><div class="kpi-value" style="color:var(--orange)" id="hub-reserve">£0</div><div class="kpi-sub">VAT+tax/wk</div></div>
+    </div>
+
+    <div class="grid-2">
+      <!-- Shutter quick control -->
+      <div class="card">
+        <div class="card-head"><div class="card-title">Shutter — Main entrance</div><span class="badge" id="hub-shutter-badge" style="background:var(--green-dim);color:var(--green);border:1px solid rgba(0,212,138,0.2)">Open</span></div>
+        <div class="card-body">
+          <div style="display:flex;gap:16px;align-items:center;margin-bottom:12px">
+            <div style="flex-shrink:0">
+              <div class="shutter-door-mini" id="hub-door" style="width:80px;height:56px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;position:relative;overflow:hidden">
+                <div id="hub-slats" style="position:absolute;top:0;left:0;right:0;height:0%;transition:height 0.6s ease;background:repeating-linear-gradient(180deg,var(--surface3) 0px,var(--surface3) 7px,var(--border) 7px,var(--border) 8px)"></div>
+                <div id="hub-opening" style="position:absolute;bottom:0;left:0;right:0;height:100%;background:var(--bg);display:flex;align-items:center;justify-content:center"><span style="font-family:Bebas Neue,sans-serif;font-size:18px;color:var(--green)" id="hub-door-pct">100%</span></div>
+              </div>
+            </div>
+            <div style="flex:1">
+              <div style="display:flex;gap:6px;margin-bottom:8px">
+                <button class="ctrl-btn-sm open" id="hub-btn-open" style="flex:1;padding:6px;border-radius:6px;border:1px solid var(--green);background:var(--green-dim);color:var(--green);cursor:pointer;font-family:DM Mono,monospace;font-size:9px;letter-spacing:1px">▲ OPEN</button>
+                <button class="ctrl-btn-sm" id="hub-btn-stop" style="flex:1;padding:6px;border-radius:6px;border:1px solid var(--yellow);background:var(--yellow-dim);color:var(--yellow);cursor:pointer;font-family:DM Mono,monospace;font-size:9px;letter-spacing:1px">■ STOP</button>
+                <button class="ctrl-btn-sm" id="hub-btn-close" style="flex:1;padding:6px;border-radius:6px;border:1px solid var(--red);background:var(--red-dim);color:var(--red);cursor:pointer;font-family:DM Mono,monospace;font-size:9px;letter-spacing:1px">▼ CLOSE</button>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input type="range" min="0" max="100" value="100" id="hub-slider" style="flex:1;height:4px;accent-color:var(--green)">
+                <span style="font-family:DM Mono,monospace;font-size:10px;color:var(--green);width:34px" id="hub-slider-val">100%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Finance snapshot -->
+      <div class="card">
+        <div class="card-head"><div class="card-title">Finance — This week</div><div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted)" id="hub-week-label">–</div></div>
+        <div class="card-body">
+          <div id="hub-fin-bars"><div style="color:var(--muted);font-family:DM Mono,monospace;font-size:11px;text-align:center;padding:12px 0">Add income entries to see breakdown</div></div>
+          <div style="border-top:1px solid var(--border);margin-top:10px;padding-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div style="font-family:DM Mono,monospace;font-size:9px"><div style="color:var(--muted);margin-bottom:2px">Best category this week</div><div style="color:var(--text);font-size:11px" id="hub-best-cat">–</div></div>
+            <div style="font-family:DM Mono,monospace;font-size:9px;text-align:right"><div style="color:var(--muted);margin-bottom:2px">Margin</div><div style="font-size:11px" id="hub-margin">0%</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lighting quick controls -->
+    <div class="card">
+      <div class="card-head"><div class="card-title">Lighting</div><div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted)" id="hub-lights-sub">3 of 6 zones on</div></div>
+      <div class="card-body">
+        <div style="display:flex;gap:8px;flex-wrap:wrap" id="hub-light-toggles"></div>
+      </div>
+    </div>
+
+    <!-- Break-even today -->
+    <div class="card">
+      <div class="card-head"><div class="card-title">Break-even — this week</div></div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px" id="hub-be-strip">
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center"><div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);margin-bottom:4px">DAILY COST</div><div style="font-family:Bebas Neue,sans-serif;font-size:22px;color:var(--blue)" id="hub-daily-cost">£0</div></div>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center"><div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);margin-bottom:4px">THIS WEEK</div><div style="font-family:Bebas Neue,sans-serif;font-size:22px;color:var(--green)" id="hub-wk-rev">£0</div></div>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center"><div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);margin-bottom:4px">SURPLUS / SHORT</div><div style="font-family:Bebas Neue,sans-serif;font-size:22px" id="hub-surplus">£0</div></div>
+        </div>
+        <div style="height:8px;background:var(--surface3);border-radius:4px;margin-top:12px;overflow:hidden"><div id="hub-be-bar" style="height:100%;width:0%;background:var(--green);border-radius:4px;transition:width 0.6s ease"></div></div>
+        <div style="display:flex;justify-content:space-between;font-family:DM Mono,monospace;font-size:9px;color:var(--muted);margin-top:4px"><span>£0</span><span id="hub-be-target-label">Weekly target: £0</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SHUTTER PAGE -->
+  <div class="page" id="page-shutter">
+    <div class="card">
+      <div class="card-head"><div class="card-title">Main roller shutter</div><div style="display:flex;align-items:center;gap:8px"><span style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted)">Shelly Plus 2PM · 192.168.1.42</span></div></div>
+      <div class="card-body">
+        <div style="display:flex;gap:20px;align-items:flex-start">
+          <div style="flex-shrink:0;width:100px">
+            <div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);margin-bottom:6px;text-align:center">Live position</div>
+            <div style="width:100px;height:70px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;position:relative;overflow:hidden">
+              <div id="sh-slats" style="position:absolute;top:0;left:0;right:0;height:0%;background:repeating-linear-gradient(180deg,var(--surface3) 0px,var(--surface3) 7px,var(--border) 7px,var(--border) 8px);transition:height 0.6s ease"></div>
+              <div id="sh-opening" style="position:absolute;bottom:0;left:0;right:0;height:100%;background:var(--bg);display:flex;align-items:center;justify-content:center;transition:height 0.6s ease"><span style="font-family:Bebas Neue,sans-serif;font-size:22px;color:var(--green)" id="sh-pct-big">100%</span></div>
+            </div>
+            <div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);margin-top:5px;text-align:center" id="sh-state">Fully open</div>
+          </div>
+          <div style="flex:1">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 10px"><div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted)">Position</div><div style="font-size:13px;font-weight:500;color:var(--green)" id="sh-pos-disp">100%</div></div>
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 10px"><div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted)">Last action</div><div style="font-size:12px;font-weight:500" id="sh-last">Opened 08:14</div></div>
+            </div>
+            <div style="display:flex;gap:8px;margin-bottom:10px">
+              <button id="sh-open-btn" style="flex:1;padding:8px;border-radius:7px;border:1px solid var(--green);background:var(--green-dim);color:var(--green);cursor:pointer;font-family:DM Mono,monospace;font-size:10px;letter-spacing:1px">▲ OPEN FULLY</button>
+              <button id="sh-stop-btn" style="flex:1;padding:8px;border-radius:7px;border:1px solid var(--yellow);background:var(--yellow-dim);color:var(--yellow);cursor:pointer;font-family:DM Mono,monospace;font-size:10px;letter-spacing:1px">■ STOP</button>
+              <button id="sh-close-btn" style="flex:1;padding:8px;border-radius:7px;border:1px solid var(--red);background:var(--red-dim);color:var(--red);cursor:pointer;font-family:DM Mono,monospace;font-size:10px;letter-spacing:1px">▼ CLOSE FULLY</button>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+              <span style="font-family:DM Mono,monospace;font-size:10px;color:var(--muted);width:80px">Set position</span>
+              <input type="range" min="0" max="100" value="100" id="sh-page-slider" style="flex:1;height:4px;accent-color:var(--green)">
+              <span style="font-family:DM Mono,monospace;font-size:10px;color:var(--green);width:34px" id="sh-page-slider-val">100%</span>
+            </div>
+            <div style="display:flex;gap:6px">
+              <button class="preset-btn" data-pos="25" style="flex:1;padding:6px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;font-family:DM Mono,monospace;font-size:9px">25%</button>
+              <button class="preset-btn" data-pos="50" style="flex:1;padding:6px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;font-family:DM Mono,monospace;font-size:9px">50%</button>
+              <button class="preset-btn" data-pos="75" style="flex:1;padding:6px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;font-family:DM Mono,monospace;font-size:9px">75%</button>
+            </div>
+            <div id="sh-moving-strip" style="display:none;align-items:center;gap:6px;font-family:DM Mono,monospace;font-size:10px;color:var(--yellow);margin-top:8px">
+              <div style="width:10px;height:10px;border:1.5px solid rgba(245,197,24,0.3);border-top-color:var(--yellow);border-radius:50%;animation:spin 0.8s linear infinite"></div>
+              <span id="sh-moving-txt">Moving…</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Schedule</div><span class="badge" style="background:var(--green-dim);color:var(--green);border:1px solid rgba(0,212,138,0.2)">Active</span></div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 10px"><div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted)">Auto open</div><div style="font-size:13px;font-weight:500;color:var(--green)">08:00 Mon–Sat</div></div>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 10px"><div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted)">Auto close</div><div style="font-size:13px;font-weight:500;color:var(--red)">18:30 Mon–Sat</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CAMERAS PAGE -->
+  <div class="page" id="page-cameras">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+        <div style="aspect-ratio:16/9;background:#0a0e14;position:relative;display:flex;align-items:center;justify-content:center">
+          <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.12) 2px,rgba(0,0,0,0.12) 4px);pointer-events:none"></div>
+          <svg width="100%" height="100%" viewBox="0 0 240 135" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><rect width="240" height="135" fill="#0a0e14"/><rect x="0" y="90" width="240" height="45" fill="#111418"/><rect x="30" y="80" width="45" height="55" fill="#1a1f26" rx="2"/><rect x="100" y="75" width="70" height="60" fill="#1a1f26" rx="2"/><rect x="185" y="85" width="40" height="50" fill="#1a1f26" rx="2"/></svg>
+          <div style="position:absolute;top:0;left:0;right:0;display:flex;align-items:center;padding:6px 8px;background:linear-gradient(rgba(0,0,0,0.6),transparent)"><span style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:1px;color:#fff;opacity:0.9">CAM 01 · WORKSHOP</span><span style="width:6px;height:6px;border-radius:50%;background:var(--red);animation:blink 1.5s ease-in-out infinite;margin-left:auto"></span></div>
+          <div style="position:absolute;bottom:4px;right:6px;font-family:DM Mono,monospace;font-size:8px;color:rgba(255,255,255,0.5)" id="cam-ts1">–</div>
+        </div>
+        <div style="padding:8px 10px;display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:500">Workshop</span><span style="font-family:DM Mono,monospace;font-size:9px;color:var(--green);display:flex;align-items:center;gap:4px"><span style="width:5px;height:5px;border-radius:50%;background:var(--green);display:inline-block"></span>Live</span></div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+        <div style="aspect-ratio:16/9;background:#0c1008;position:relative;display:flex;align-items:center;justify-content:center">
+          <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.12) 2px,rgba(0,0,0,0.12) 4px);pointer-events:none"></div>
+          <svg width="100%" height="100%" viewBox="0 0 240 135" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><rect width="240" height="135" fill="#0c1008"/><rect x="0" y="82" width="240" height="53" fill="#111508"/><rect x="15" y="45" width="75" height="90" fill="#141a0c" rx="2"/><rect x="150" y="52" width="75" height="83" fill="#141a0c" rx="2"/></svg>
+          <div style="position:absolute;top:0;left:0;right:0;display:flex;align-items:center;padding:6px 8px;background:linear-gradient(rgba(0,0,0,0.6),transparent)"><span style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:1px;color:#fff;opacity:0.9">CAM 02 · FORECOURT</span><span style="width:6px;height:6px;border-radius:50%;background:var(--red);animation:blink 1.5s ease-in-out infinite;margin-left:auto"></span></div>
+          <div style="position:absolute;bottom:4px;right:6px;font-family:DM Mono,monospace;font-size:8px;color:rgba(255,255,255,0.5)" id="cam-ts2">–</div>
+        </div>
+        <div style="padding:8px 10px;display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:500">Forecourt</span><span style="font-family:DM Mono,monospace;font-size:9px;color:var(--green);display:flex;align-items:center;gap:4px"><span style="width:5px;height:5px;border-radius:50%;background:var(--green);display:inline-block"></span>Live</span></div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+        <div style="aspect-ratio:16/9;background:#100e08;position:relative;display:flex;align-items:center;justify-content:center">
+          <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.12) 2px,rgba(0,0,0,0.12) 4px);pointer-events:none"></div>
+          <svg width="100%" height="100%" viewBox="0 0 240 135" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><rect width="240" height="135" fill="#100e08"/><rect x="0" y="75" width="240" height="60" fill="#18150a"/><rect x="45" y="30" width="150" height="105" fill="#201c10" rx="3"/><rect x="60" y="38" width="120" height="68" fill="#151208" rx="2"/></svg>
+          <div style="position:absolute;top:0;left:0;right:0;display:flex;align-items:center;padding:6px 8px;background:linear-gradient(rgba(0,0,0,0.6),transparent)"><span style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:1px;color:#fff;opacity:0.9">CAM 03 · RECEPTION</span><span style="width:6px;height:6px;border-radius:50%;background:var(--red);animation:blink 1.5s ease-in-out infinite;margin-left:auto"></span></div>
+          <div style="position:absolute;bottom:4px;right:6px;font-family:DM Mono,monospace;font-size:8px;color:rgba(255,255,255,0.5)" id="cam-ts3">–</div>
+        </div>
+        <div style="padding:8px 10px;display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:500">Reception</span><span style="font-family:DM Mono,monospace;font-size:9px;color:var(--green);display:flex;align-items:center;gap:4px"><span style="width:5px;height:5px;border-radius:50%;background:var(--green);display:inline-block"></span>Live</span></div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+        <div style="aspect-ratio:16/9;background:#08100f;position:relative;display:flex;align-items:center;justify-content:center">
+          <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.12) 2px,rgba(0,0,0,0.12) 4px);pointer-events:none"></div>
+          <svg width="100%" height="100%" viewBox="0 0 240 135" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><rect width="240" height="135" fill="#08100f"/><rect x="0" y="80" width="240" height="55" fill="#0a1510"/><rect x="5" y="68" width="75" height="67" fill="#0e1a16" rx="2"/><rect x="90" y="60" width="60" height="75" fill="#0e1a16" rx="2"/><rect x="162" y="72" width="70" height="63" fill="#0e1a16" rx="2"/></svg>
+          <div style="position:absolute;top:0;left:0;right:0;display:flex;align-items:center;padding:6px 8px;background:linear-gradient(rgba(0,0,0,0.6),transparent)"><span style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:1px;color:#fff;opacity:0.9">CAM 04 · REAR EXT</span><span style="width:6px;height:6px;border-radius:50%;background:var(--red);animation:blink 1.5s ease-in-out infinite;margin-left:auto"></span></div>
+          <div style="position:absolute;bottom:4px;right:6px;font-family:DM Mono,monospace;font-size:8px;color:rgba(255,255,255,0.5)" id="cam-ts4">–</div>
+        </div>
+        <div style="padding:8px 10px;display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:500">Rear exterior</span><span style="font-family:DM Mono,monospace;font-size:9px;color:var(--green);display:flex;align-items:center;gap:4px"><span style="width:5px;height:5px;border-radius:50%;background:var(--green);display:inline-block"></span>Live</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIGHTS PAGE -->
+  <div class="page" id="page-lights">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:14px" id="lights-grid-full"></div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Scene presets</div></div>
+      <div class="card-body">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button id="scene-open" style="flex:1;padding:8px;border-radius:7px;border:1px solid var(--green);background:var(--green-dim);color:var(--green);cursor:pointer;font-family:DM Mono,monospace;font-size:10px;letter-spacing:1px">☀ OPENING</button>
+          <button id="scene-work" style="flex:1;padding:8px;border-radius:7px;border:1px solid var(--blue);background:var(--blue-dim);color:var(--blue);cursor:pointer;font-family:DM Mono,monospace;font-size:10px;letter-spacing:1px">⚙ WORKSHOP</button>
+          <button id="scene-close" style="flex:1;padding:8px;border-radius:7px;border:1px solid var(--purple);background:var(--purple-dim,rgba(167,139,250,0.12));color:var(--purple);cursor:pointer;font-family:DM Mono,monospace;font-size:10px;letter-spacing:1px">☾ CLOSING</button>
+          <button id="scene-off" style="flex:1;padding:8px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;font-family:DM Mono,monospace;font-size:10px;letter-spacing:1px">✕ ALL OFF</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ENVIRONMENT PAGE -->
+  <div class="page" id="page-environment">
+    <div style="background:var(--green-dim);border:1px solid rgba(0,212,138,0.2);border-radius:10px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:22px">🛡</div>
+        <div><div style="font-family:DM Mono,monospace;font-size:10px;letter-spacing:2px;color:var(--green);text-transform:uppercase">Alarm — disarmed</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Site occupied · Last armed: yesterday 18:34</div></div>
+      </div>
+      <button style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:6px;cursor:pointer;font-family:DM Mono,monospace;font-size:10px">Arm alarm</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px"><div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Workshop temp</div><div style="font-family:Bebas Neue,sans-serif;font-size:24px;color:var(--orange)">18°C</div><div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted)">Target: 16–22°C</div></div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px"><div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Office temp</div><div style="font-family:Bebas Neue,sans-serif;font-size:24px;color:var(--orange)">21°C</div><div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted)">Target: 19–22°C</div></div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px"><div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:4px">CO detector</div><div style="font-family:Bebas Neue,sans-serif;font-size:24px;color:var(--green)">Clear</div><div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted)">0 ppm · Normal</div></div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px"><div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Outside temp</div><div style="font-family:Bebas Neue,sans-serif;font-size:24px;color:var(--blue)">9°C</div><div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted)">Manchester, UK</div></div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px"><div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Humidity</div><div style="font-family:Bebas Neue,sans-serif;font-size:24px;color:var(--blue)">58%</div><div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted)">Normal range</div></div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px"><div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Extraction fan</div><div style="font-family:Bebas Neue,sans-serif;font-size:24px;color:var(--green)">Running</div><div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted)">Auto mode</div></div>
+    </div>
+  </div>
+
+  <!-- STAFF & HOLIDAY PAGE -->
+  <div class="page" id="page-staff">
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-head">
+        <div class="card-title">Team</div>
+        <button id="btn-add-staff" style="background:var(--green);border:none;color:#000;padding:5px 12px;border-radius:6px;cursor:pointer;font-family:DM Mono,monospace;font-size:10px;font-weight:600;letter-spacing:1px">+ ADD STAFF</button>
+      </div>
+      <div class="card-body">
+        <div id="staff-list"></div>
+        <div id="add-staff-form" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+          <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end">
+            <div>
+              <div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:5px">Full Name</div>
+              <input class="cost-input" type="text" id="new-staff-name" placeholder="e.g. Joe Hamlett">
+            </div>
+            <div>
+              <div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:5px">Role</div>
+              <input class="cost-input" type="text" id="new-staff-role" placeholder="e.g. Director">
+            </div>
+            <button id="btn-save-staff" style="background:var(--green);border:none;color:#000;padding:8px 14px;border-radius:6px;cursor:pointer;font-family:DM Mono,monospace;font-size:11px;font-weight:600">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-head">
+        <div class="card-title">Holiday allowance — 2026</div>
+        <div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted)">28 days per person · Jan–Dec</div>
+      </div>
+      <div class="card-body"><div id="holiday-summary"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Holiday calendar</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button id="cal-prev" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);width:26px;height:26px;border-radius:5px;cursor:pointer;font-size:13px">‹</button>
+          <span style="font-family:DM Mono,monospace;font-size:11px;color:var(--muted);min-width:100px;text-align:center" id="cal-month-label">–</span>
+          <button id="cal-next" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);width:26px;height:26px;border-radius:5px;cursor:pointer;font-size:13px">›</button>
+        </div>
+      </div>
+      <div class="card-body" style="padding:10px">
+        <div id="cal-grid"></div>
+        <div style="border-top:1px solid var(--border);margin-top:12px;padding-top:12px">
+          <div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Book holiday</div>
+          <div style="display:grid;grid-template-columns:1fr auto auto auto;gap:8px;align-items:end">
+            <div>
+              <div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);margin-bottom:4px">Staff member</div>
+              <select class="cost-cat-select" id="hol-staff" style="width:100%"></select>
+            </div>
+            <div>
+              <div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);margin-bottom:4px">From</div>
+              <input class="cost-input" type="date" id="hol-from" style="width:130px">
+            </div>
+            <div>
+              <div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);margin-bottom:4px">To</div>
+              <input class="cost-input" type="date" id="hol-to" style="width:130px">
+            </div>
+            <button id="btn-book-hol" style="background:var(--green);border:none;color:#000;padding:8px 14px;border-radius:6px;cursor:pointer;font-family:DM Mono,monospace;font-size:11px;font-weight:600">Book</button>
+          </div>
+          <div id="hol-feedback" style="font-family:DM Mono,monospace;font-size:10px;margin-top:6px;min-height:16px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div class="page" id="page-overview">
+    <div class="kpi-grid">
+      <div class="kpi"><div class="kpi-accent" style="background:var(--green)"></div><div class="kpi-label">Total Revenue</div><div class="kpi-value" style="color:var(--green)" id="kpi-revenue">£0</div><div class="kpi-sub">excl. VAT</div></div>
+      <div class="kpi"><div class="kpi-accent" style="background:var(--orange)"></div><div class="kpi-label">Total Costs</div><div class="kpi-value" style="color:var(--orange)" id="kpi-costs">£0</div><div class="kpi-sub">all categories</div></div>
+      <div class="kpi"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-label">Net Profit</div><div class="kpi-value" id="kpi-profit" style="color:var(--blue)">£0</div><div class="kpi-sub">revenue minus costs</div></div>
+      <div class="kpi"><div class="kpi-accent" style="background:var(--purple)"></div><div class="kpi-label">Margin</div><div class="kpi-value" style="color:var(--purple)" id="kpi-margin">0%</div><div class="kpi-sub">profit / revenue</div></div>
+      <div class="kpi"><div class="kpi-accent" style="background:var(--yellow)"></div><div class="kpi-label">VAT Owed</div><div class="kpi-value" style="color:var(--yellow)" id="kpi-vat">£0</div><div class="kpi-sub">set aside for HMRC</div></div>
+      <div class="kpi"><div class="kpi-accent" style="background:var(--teal)"></div><div class="kpi-label">Labour Income</div><div class="kpi-value" style="color:var(--teal)" id="kpi-labour">£0</div><div class="kpi-sub" id="kpi-labour-pct">–</div></div>
+      <div class="kpi"><div class="kpi-accent" style="background:var(--pink)"></div><div class="kpi-label">Parts Income</div><div class="kpi-value" style="color:var(--pink)" id="kpi-parts-inc">£0</div><div class="kpi-sub" id="kpi-parts-pct">–</div></div>
+      <div class="kpi"><div class="kpi-accent" style="background:var(--red)"></div><div class="kpi-label">Parts Cost</div><div class="kpi-value" style="color:var(--red)" id="kpi-parts-cost">£0</div><div class="kpi-sub">parts purchased</div></div>
+    </div>
+    <div class="vat-strip">
+      <div><div class="vat-item-label">Gross Invoiced</div><div class="vat-item-value" id="vat-gross">£0</div></div>
+      <div><div class="vat-item-label">VAT Collected</div><div class="vat-item-value" id="vat-collected">£0</div></div>
+      <div><div class="vat-item-label">VAT Reclaimable</div><div class="vat-item-value" id="vat-reclaim">£0</div></div>
+      <div><div class="vat-item-label">⚠ Net VAT Owed</div><div class="vat-item-value" id="vat-net">£0</div></div>
+    </div>
+    <div class="grid-2">
+      <div class="card"><div class="card-head"><div class="card-title">Revenue Breakdown</div></div><div class="card-body"><div id="rev-breakdown"><p style="color:var(--muted);font-family:DM Mono,monospace;font-size:11px;text-align:center;padding:16px 0">No income data yet</p></div></div></div>
+      <div class="card"><div class="card-head"><div class="card-title">Cost Breakdown</div></div><div class="card-body"><div id="cost-breakdown"><p style="color:var(--muted);font-family:DM Mono,monospace;font-size:11px;text-align:center;padding:16px 0">No cost data yet</p></div></div></div>
+    </div>
+    <div class="card"><div class="card-head"><div class="card-title">Job Category Performance</div></div><div class="card-body"><div class="cat-grid" id="cat-overview"><p style="color:var(--muted);font-family:DM Mono,monospace;font-size:11px;text-align:center;padding:16px 0;grid-column:1/-1">Add income entries to see breakdown</p></div></div></div>
+  </div>
+
+  <!-- INCOME -->
+  <div class="page" id="page-income">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Income Entries</div>
+        <button class="action-btn" style="width:auto;padding:6px 12px;font-size:11px;border-style:solid" id="income-import-btn">⬆ Import Motasoft CSV</button>
+      </div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:1fr 100px 110px 100px 28px;gap:8px;padding-bottom:8px;border-bottom:1px solid var(--border);">
+          <div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase">Description</div>
+          <div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase">Category</div>
+          <div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase">Labour £</div>
+          <div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase">Parts £</div>
+          <div></div>
+        </div>
+        <div id="income-entries-list"></div>
+        <button class="add-row-btn" id="btn-add-income">+ ADD JOB / INVOICE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- COSTS -->
+  <div class="page" id="page-costs">
+    <div class="card">
+      <div class="card-head"><div class="card-title">Cost Entries</div></div>
+      <div class="card-body">
+        <div id="cost-entries-list"></div>
+        <div class="add-cost-form">
+          <select class="cost-cat-select" id="new-cost-cat"><option value="Parts">🔩 Parts</option><option value="Staff">👷 Staff</option><option value="Premises">🏢 Premises</option><option value="Equipment">🔧 Equipment</option><option value="Marketing">📢 Marketing</option><option value="Software">💻 Software</option><option value="Fuel">⛽ Fuel</option><option value="Other">📦 Other</option></select>
+          <input class="cost-input" type="text" id="new-cost-name" placeholder="Description...">
+          <input class="cost-input" type="number" id="new-cost-amount" placeholder="£0.00" step="0.01" min="0" style="width:90px">
+          <button class="add-cost-btn" id="btn-add-cost">Add</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECURRING -->
+  <div class="page" id="page-recurring">
+    <div style="background:linear-gradient(135deg,rgba(61,155,255,0.08),rgba(61,155,255,0.03));border:1px solid rgba(61,155,255,0.2);border-radius:10px;padding:16px 20px;margin-bottom:16px;font-size:13px;color:var(--muted);line-height:1.5">↻ Set up fixed costs once — they auto-load into every week. Toggle VAT reclaimable if you can reclaim 20% input VAT on that cost. Enter amounts <strong style="color:var(--text)">ex-VAT</strong>.</div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head"><div class="card-title">Monthly Fixed Costs</div><div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted)">÷4.33 per week</div></div>
+        <div class="card-body">
+          <div id="recurring-monthly-list"></div>
+          <div class="add-cost-form" style="margin-top:12px">
+            <select class="cost-cat-select" id="rm-cat"><option value="Premises">🏢 Premises</option><option value="Staff">👷 Staff</option><option value="Equipment">🔧 Equipment</option><option value="Software">💻 Software</option><option value="Marketing">📢 Marketing</option><option value="Other">📦 Other</option></select>
+            <input class="cost-input" type="text" id="rm-name" placeholder="e.g. Rent, Rates...">
+            <input class="cost-input" type="number" id="rm-amount" placeholder="Monthly £" step="0.01" min="0" style="width:110px">
+            <button class="add-cost-btn" id="btn-add-monthly">Add</button>
+          </div>
+          <label style="display:flex;align-items:center;gap:8px;margin-top:10px;cursor:pointer;font-size:12px;color:var(--muted)">
+            <div class="vat-toggle-wrap"><input type="checkbox" id="rm-vat" class="vat-toggle-input"><span class="vat-toggle-slider"></span></div>
+            VAT reclaimable (enter ex-VAT)
+          </label>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div class="card-title">Weekly Fixed Costs</div><div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted)">exact weekly amount</div></div>
+        <div class="card-body">
+          <div id="recurring-weekly-list"></div>
+          <div class="add-cost-form" style="margin-top:12px">
+            <select class="cost-cat-select" id="rw-cat"><option value="Staff">👷 Staff</option><option value="Fuel">⛽ Fuel</option><option value="Premises">🏢 Premises</option><option value="Equipment">🔧 Equipment</option><option value="Software">💻 Software</option><option value="Other">📦 Other</option></select>
+            <input class="cost-input" type="text" id="rw-name" placeholder="e.g. Wages, Cleaner...">
+            <input class="cost-input" type="number" id="rw-amount" placeholder="Weekly £" step="0.01" min="0" style="width:110px">
+            <button class="add-cost-btn" id="btn-add-weekly">Add</button>
+          </div>
+          <label style="display:flex;align-items:center;gap:8px;margin-top:10px;cursor:pointer;font-size:12px;color:var(--muted)">
+            <div class="vat-toggle-wrap"><input type="checkbox" id="rw-vat" class="vat-toggle-input"><span class="vat-toggle-slider"></span></div>
+            VAT reclaimable (enter ex-VAT)
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="card"><div class="card-head"><div class="card-title">Weekly Cost Summary</div></div><div class="card-body"><div id="recurring-summary"><p style="color:var(--muted);font-family:DM Mono,monospace;font-size:11px;text-align:center;padding:16px 0">No recurring costs set up yet</p></div></div></div>
+  </div>
+
+  <!-- PERFORMANCE -->
+  <div class="page" id="page-performance">
+    <div class="card" style="margin-bottom:16px"><div class="card-head"><div class="card-title">Category Performance</div></div><div class="card-body"><div id="perf-detail"><p style="color:var(--muted);font-family:DM Mono,monospace;font-size:11px;text-align:center;padding:20px 0">No income data yet</p></div></div></div>
+    <div class="grid-2">
+      <div class="card"><div class="card-head"><div class="card-title">Labour vs Parts Split</div></div><div class="card-body" id="lp-split"><p style="color:var(--muted);font-family:DM Mono,monospace;font-size:11px;text-align:center;padding:16px 0">–</p></div></div>
+      <div class="card"><div class="card-head"><div class="card-title">Parts Margin</div></div><div class="card-body" id="parts-margin-card"><p style="color:var(--muted);font-family:DM Mono,monospace;font-size:11px;text-align:center;padding:16px 0">–</p></div></div>
+    </div>
+  </div>
+
+  <!-- TAX -->
+  <div class="page" id="page-tax">
+    <div style="background:linear-gradient(135deg,rgba(245,197,24,0.08),rgba(245,197,24,0.03));border:1px solid rgba(245,197,24,0.2);border-radius:10px;padding:16px 20px;margin-bottom:16px"><div style="font-family:DM Mono,monospace;font-size:10px;letter-spacing:2px;color:var(--yellow);text-transform:uppercase;margin-bottom:4px">⚠ Estimates only — confirm with your accountant</div><div style="font-size:12px;color:var(--muted);line-height:1.6">Uses 2025/26 UK tax rates. Salary at personal allowance, remainder as dividends. Shows liability from this company only.</div></div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">VAT — Transfer This Week</div></div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px">
+          <div><div class="vat-item-label">Transfer This Week</div><div style="font-family:Bebas Neue,sans-serif;font-size:36px;color:var(--yellow)" id="tax-vat-week">£0.00</div><div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted)">net VAT owed this week</div></div>
+          <div><div class="vat-item-label">Running YTD</div><div style="font-family:Bebas Neue,sans-serif;font-size:36px;color:var(--yellow)" id="tax-vat-ytd">£0.00</div><div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted)">total to hold for HMRC</div></div>
+          <div><div class="vat-item-label">This Quarter</div><div style="font-family:Bebas Neue,sans-serif;font-size:36px;color:var(--orange)" id="tax-vat-quarter">£0.00</div><div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted)">quarter so far</div></div>
+          <div><div class="vat-item-label">Next VAT Due</div><div style="font-family:Bebas Neue,sans-serif;font-size:16px;color:var(--muted);margin-top:8px" id="tax-vat-due">–</div><div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted)">quarter end + 37 days</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title">Tax Settings</div></div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
+          <div><div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:6px">Annual Salary (£)</div><input class="cost-input" type="number" id="tax-salary" value="12570" step="100"></div>
+          <div><div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:6px">Tax Year Start</div><input class="cost-input" type="date" id="tax-year-start"></div>
+          <div><div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:6px">Dividend Allowance</div><div style="font-family:Bebas Neue,sans-serif;font-size:22px;color:var(--muted);margin-top:4px">£500</div><div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted)">2025/26 tax-free dividend</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="card"><div class="card-head"><div class="card-title">Corporation Tax</div></div><div class="card-body"><div style="margin-bottom:12px"><div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:4px">Projected Annual Profit</div><div style="font-family:Bebas Neue,sans-serif;font-size:26px" id="ct-annual-profit">£0</div></div><div id="ct-breakdown"></div><div style="border-top:1px solid var(--border);margin-top:12px;padding-top:12px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div style="font-family:DM Mono,monospace;font-size:10px;color:var(--muted);text-transform:uppercase">Est. Corp Tax Bill</div><div style="font-family:Bebas Neue,sans-serif;font-size:24px;color:var(--red)" id="ct-bill">£0</div></div><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-family:DM Mono,monospace;font-size:10px;color:var(--muted);text-transform:uppercase">Set aside per week</div><div style="font-family:Bebas Neue,sans-serif;font-size:20px;color:var(--orange)" id="ct-weekly">£0</div></div></div></div></div>
+      <div class="card"><div class="card-head"><div class="card-title">Personal Tax (this company)</div></div><div class="card-body"><div id="pt-breakdown"></div><div style="border-top:1px solid var(--border);margin-top:12px;padding-top:12px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div style="font-family:DM Mono,monospace;font-size:10px;color:var(--muted);text-transform:uppercase">Est. Personal Tax Bill</div><div style="font-family:Bebas Neue,sans-serif;font-size:24px;color:var(--red)" id="pt-bill">£0</div></div><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-family:DM Mono,monospace;font-size:10px;color:var(--muted);text-transform:uppercase">Set aside per week</div><div style="font-family:Bebas Neue,sans-serif;font-size:20px;color:var(--orange)" id="pt-weekly">£0</div></div></div></div></div>
+    </div>
+    <div class="card"><div class="card-head"><div class="card-title">Total — Put Aside Each Week</div></div><div class="card-body"><div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:16px"><div style="background:var(--surface2);border:1px solid var(--border);border-top:2px solid var(--yellow);border-radius:8px;padding:14px;text-align:center"><div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);margin-bottom:4px">VAT</div><div style="font-family:Bebas Neue,sans-serif;font-size:24px;color:var(--yellow)" id="sum-vat">£0</div><div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted)">to VAT account</div></div><div style="background:var(--surface2);border:1px solid var(--border);border-top:2px solid var(--red);border-radius:8px;padding:14px;text-align:center"><div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);margin-bottom:4px">Corp Tax</div><div style="font-family:Bebas Neue,sans-serif;font-size:24px;color:var(--red)" id="sum-ct">£0</div><div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted)">to tax reserve</div></div><div style="background:var(--surface2);border:1px solid var(--border);border-top:2px solid var(--orange);border-radius:8px;padding:14px;text-align:center"><div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);margin-bottom:4px">Personal Tax</div><div style="font-family:Bebas Neue,sans-serif;font-size:24px;color:var(--orange)" id="sum-pt">£0</div><div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted)">personal reserve</div></div><div style="background:var(--surface2);border:1px solid rgba(0,212,138,0.3);border-top:2px solid var(--green);border-radius:8px;padding:14px;text-align:center"><div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);margin-bottom:4px">Total</div><div style="font-family:Bebas Neue,sans-serif;font-size:24px;color:var(--green)" id="sum-total">£0</div><div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted)">combined weekly</div></div></div><div style="background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--green);border-radius:6px;padding:12px 16px;font-family:DM Mono,monospace;font-size:11px;color:var(--muted);line-height:1.8" id="sum-note">Enter income and costs data to see weekly set-aside figures.</div></div></div>
+  </div>
+
+  <!-- BREAK-EVEN -->
+  <div class="page" id="page-breakeven">
+    <div class="card">
+      <div class="card-head"><div class="card-title">Your Working Pattern</div></div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px">
+          <div><div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:6px">Days Open/Week</div><input class="cost-input" type="number" id="be-days" value="5" min="1" max="7"></div>
+          <div><div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:6px">Hours/Day</div><input class="cost-input" type="number" id="be-hours" value="8" min="1" max="24" step="0.5"></div>
+          <div><div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:6px">Weeks/Year</div><input class="cost-input" type="number" id="be-weeks" value="48" min="1" max="52"><div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);margin-top:3px">48 = 4 wks holiday</div></div>
+          <div><div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:6px">Labour Rate £/hr</div><input class="cost-input" type="number" id="be-rate" value="75" min="1"></div>
+        </div>
+      </div>
+    </div>
+    <div style="background:linear-gradient(135deg,rgba(61,155,255,0.08),rgba(61,155,255,0.03));border:1px solid rgba(61,155,255,0.25);border-radius:14px;padding:28px;margin-bottom:16px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;text-align:center">
+      <div><div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:3px;color:var(--blue);text-transform:uppercase;margin-bottom:8px">Cost Per Day</div><div style="font-family:Bebas Neue,sans-serif;font-size:52px;letter-spacing:2px;color:var(--blue);line-height:1" id="be-daily-cost">£0</div><div style="font-family:DM Mono,monospace;font-size:10px;color:var(--muted);margin-top:6px">just to open the doors</div></div>
+      <div style="border-left:1px solid var(--border);border-right:1px solid var(--border)"><div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:3px;color:var(--green);text-transform:uppercase;margin-bottom:8px">Break-Even Revenue</div><div style="font-family:Bebas Neue,sans-serif;font-size:52px;letter-spacing:2px;color:var(--green);line-height:1" id="be-daily-revenue">£0</div><div style="font-family:DM Mono,monospace;font-size:10px;color:var(--muted);margin-top:6px">needed per day to cover costs</div></div>
+      <div><div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:3px;color:var(--teal);text-transform:uppercase;margin-bottom:8px">Break-Even Hours</div><div style="font-family:Bebas Neue,sans-serif;font-size:52px;letter-spacing:2px;color:var(--teal);line-height:1" id="be-daily-hours">0h</div><div style="font-family:DM Mono,monospace;font-size:10px;color:var(--muted);margin-top:6px">billable hours to cover costs</div></div>
+    </div>
+    <div class="grid-2">
+      <div class="card"><div class="card-head"><div class="card-title">Daily Cost Breakdown</div></div><div class="card-body"><div id="be-cost-breakdown"></div></div></div>
+      <div class="card"><div class="card-head"><div class="card-title">Daily Revenue Targets</div></div><div class="card-body"><div id="be-targets"></div></div></div>
+    </div>
+    <div class="card"><div class="card-head"><div class="card-title">This Week — Break-Even Progress</div><div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted)" id="be-week-label">–</div></div><div class="card-body"><div id="be-week-progress"></div></div></div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="page" id="page-history">
+    <div class="card"><div class="card-head"><div class="card-title">Weekly History</div></div><div style="overflow-x:auto"><table class="hist-table"><thead><tr><th>Week</th><th>Revenue</th><th>Costs</th><th>Profit</th><th>Margin</th><th>VAT Owed</th><th>Best Category</th></tr></thead><tbody id="history-body"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">No history yet</td></tr></tbody></table></div></div>
+  </div>
+
+  <!-- CAPITAL ITEMS / AIA TRACKER -->
+  <div class="page" id="page-capital">
+
+    <div style="background:linear-gradient(135deg,rgba(167,139,250,0.08),rgba(167,139,250,0.03));border:1px solid rgba(167,139,250,0.25);border-radius:10px;padding:16px 20px;margin-bottom:16px;">
+      <div style="font-family:DM Mono,monospace;font-size:10px;letter-spacing:2px;color:var(--purple);text-transform:uppercase;margin-bottom:4px;">⬡ Annual Investment Allowance Tracker</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.6">Track capital purchases and AIA claims. The AIA lets you deduct the full cost of qualifying plant &amp; machinery from your profits before corporation tax — up to <strong style="color:var(--text)">£1,000,000 per year</strong>. Log every capital purchase here to see your tax saving in real time. Always confirm with your accountant.</div>
+    </div>
+
+    <!-- AIA summary strip -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:16px;">
+      <div class="kpi"><div class="kpi-accent" style="background:var(--purple)"></div><div class="kpi-label">Total Spent (YTD)</div><div class="kpi-value" style="color:var(--purple)" id="aia-total-spent">£0</div><div class="kpi-sub">qualifying purchases</div></div>
+      <div class="kpi"><div class="kpi-accent" style="background:var(--green)"></div><div class="kpi-label">AIA Allowance Left</div><div class="kpi-value" style="color:var(--green)" id="aia-remaining">£1,000,000</div><div class="kpi-sub">of £1m annual limit</div></div>
+      <div class="kpi"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-label">Corp Tax Saved</div><div class="kpi-value" style="color:var(--blue)" id="aia-tax-saved">£0</div><div class="kpi-sub">at 19% on qualifying spend</div></div>
+      <div class="kpi"><div class="kpi-accent" style="background:var(--yellow)"></div><div class="kpi-label">VAT Reclaimable</div><div class="kpi-value" style="color:var(--yellow)" id="aia-vat-reclaim">£0</div><div class="kpi-sub">input VAT on purchases</div></div>
+    </div>
+
+    <!-- AIA progress bar -->
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-head"><div class="card-title">AIA Usage This Tax Year</div><div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted)" id="aia-year-label">–</div></div>
+      <div class="card-body">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div style="font-family:DM Mono,monospace;font-size:10px;color:var(--muted)" id="aia-progress-label">£0 of £1,000,000 used</div>
+          <div style="font-family:DM Mono,monospace;font-size:10px;color:var(--purple)" id="aia-progress-pct">0%</div>
+        </div>
+        <div style="height:10px;background:var(--surface3);border-radius:5px;overflow:hidden;margin-bottom:12px;">
+          <div id="aia-progress-bar" style="height:100%;width:0%;background:var(--purple);border-radius:5px;transition:width 0.5s ease;"></div>
+        </div>
+        <div style="font-family:DM Mono,monospace;font-size:10px;color:var(--muted);line-height:1.8" id="aia-summary-note">Add capital purchases below to see your AIA position.</div>
+      </div>
+    </div>
+
+    <!-- Add purchase form -->
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-head"><div class="card-title">Add Capital Purchase</div></div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:1fr 160px 120px 110px 100px auto;gap:8px;align-items:end;">
+          <div>
+            <div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:5px">Item Description</div>
+            <input class="cost-input" type="text" id="cap-desc" placeholder="e.g. Hunter wheel aligner...">
+          </div>
+          <div>
+            <div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:5px">Category</div>
+            <select class="cost-cat-select" id="cap-cat" style="width:100%">
+              <option value="Diagnostic Equipment">🔍 Diagnostic Equipment</option>
+              <option value="Hand & Power Tools">🔧 Hand &amp; Power Tools</option>
+              <option value="IT & Office Equipment">💻 IT &amp; Office Equipment</option>
+              <option value="Courtesy & Pool Vehicles">🚗 Courtesy &amp; Pool Vehicles</option>
+              <option value="Premises Improvements">🏢 Premises Improvements</option>
+              <option value="Signage & Marketing">📢 Signage &amp; Marketing</option>
+              <option value="Fuel">⛽ Fuel</option>
+            </select>
+          </div>
+          <div>
+            <div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:5px">Date</div>
+            <input class="cost-input" type="date" id="cap-date" style="width:100%">
+          </div>
+          <div>
+            <div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:5px">Cost (ex-VAT)</div>
+            <input class="cost-input" type="number" id="cap-cost" placeholder="£0.00" step="0.01" min="0" style="width:100%">
+          </div>
+          <div>
+            <div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:5px">AIA Qualifying?</div>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--muted);margin-top:8px;">
+              <div class="vat-toggle-wrap"><input type="checkbox" id="cap-aia" class="vat-toggle-input" checked><span class="vat-toggle-slider"></span></div>
+              <span id="cap-aia-label" style="font-size:11px">Yes</span>
+            </label>
+          </div>
+          <div style="padding-bottom:1px">
+            <button class="add-cost-btn" id="btn-add-capital" style="padding:8px 16px;margin-top:24px">Add</button>
+          </div>
+        </div>
+        <div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);margin-top:10px;line-height:1.7">
+          Enter cost <strong style="color:var(--text)">ex-VAT</strong>. VAT reclaimable on business purchases shown separately. Courtesy &amp; Pool Vehicles must be used solely for business — personal use vehicles do not qualify for AIA or VAT reclaim.
+        </div>
+      </div>
+    </div>
+
+    <!-- Category breakdown -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head"><div class="card-title">Spend by Category</div></div>
+        <div class="card-body"><div id="cap-cat-breakdown"><p style="color:var(--muted);font-family:DM Mono,monospace;font-size:11px;text-align:center;padding:16px 0">No purchases yet</p></div></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div class="card-title">Tax Benefit by Category</div></div>
+        <div class="card-body"><div id="cap-tax-breakdown"><p style="color:var(--muted);font-family:DM Mono,monospace;font-size:11px;text-align:center;padding:16px 0">No purchases yet</p></div></div>
+      </div>
+    </div>
+
+    <!-- Purchases list -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">All Capital Purchases</div>
+        <div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted)" id="cap-count">0 items</div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="hist-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Description</th>
+              <th>Category</th>
+              <th>Cost (ex-VAT)</th>
+              <th>VAT (20%)</th>
+              <th>AIA?</th>
+              <th>Tax Saving</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="cap-table-body">
+            <tr><td colspan="8" style="text-align:center;color:var(--muted);padding:20px">No purchases logged yet</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ACQUISITION COSTS PAGE -->
+  <div class="page" id="page-acquisition">
+
+    <div style="background:linear-gradient(135deg,rgba(61,155,255,0.08),rgba(61,155,255,0.03));border:1px solid rgba(61,155,255,0.25);border-radius:10px;padding:16px 20px;margin-bottom:16px;">
+      <div style="font-family:DM Mono,monospace;font-size:10px;letter-spacing:2px;color:var(--blue);text-transform:uppercase;margin-bottom:4px;">⊕ Glenn Harrop Motors — Acquisition Costs</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.6">Track all costs incurred through <strong style="color:var(--text)">Hamlett Motor Holdings Ltd</strong> in acquiring Glenn Harrop Motors — survey, due diligence, legal fees, stamp duty etc. VAT-reclaimable costs are flagged separately. Capital costs are added to the acquisition cost base; revenue costs are deductible against profits. Always confirm treatment with your accountant.</div>
+    </div>
+
+    <!-- Summary strip -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px;">
+      <div class="kpi"><div class="kpi-accent" style="background:var(--blue)"></div><div class="kpi-label">Total Spent</div><div class="kpi-value" style="color:var(--blue)" id="acq-total">£0</div><div class="kpi-sub">all acquisition costs</div></div>
+      <div class="kpi"><div class="kpi-accent" style="background:var(--green)"></div><div class="kpi-label">VAT Reclaimable</div><div class="kpi-value" style="color:var(--green)" id="acq-vat">£0</div><div class="kpi-sub">20% on eligible costs</div></div>
+      <div class="kpi"><div class="kpi-accent" style="background:var(--purple)"></div><div class="kpi-label">Capital Costs</div><div class="kpi-value" style="color:var(--purple)" id="acq-capital">£0</div><div class="kpi-sub">added to cost base</div></div>
+      <div class="kpi"><div class="kpi-accent" style="background:var(--teal)"></div><div class="kpi-label">Revenue Costs</div><div class="kpi-value" style="color:var(--teal)" id="acq-revenue">£0</div><div class="kpi-sub">deductible vs profits</div></div>
+      <div class="kpi"><div class="kpi-accent" style="background:var(--yellow)"></div><div class="kpi-label">Outstanding</div><div class="kpi-value" style="color:var(--yellow)" id="acq-outstanding">£0</div><div class="kpi-sub">invoices not yet paid</div></div>
+    </div>
+
+    <!-- Add cost form -->
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-head"><div class="card-title">Log Acquisition Cost</div></div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:1fr 160px 110px 100px;gap:8px;margin-bottom:8px;">
+          <div>
+            <div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:5px">Description</div>
+            <input class="cost-input" type="text" id="acq-desc" placeholder="e.g. Property survey, Solicitors fees...">
+          </div>
+          <div>
+            <div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:5px">Category</div>
+            <select class="cost-cat-select" id="acq-cat" style="width:100%">
+              <option value="Survey">🏠 Survey / Valuation</option>
+              <option value="Due Diligence">🔍 Due Diligence</option>
+              <option value="Legal">⚖ Legal Fees</option>
+              <option value="Accountancy">📊 Accountancy</option>
+              <option value="Stamp Duty">🏛 Stamp Duty</option>
+              <option value="Finance">💰 Finance / Broker</option>
+              <option value="Search Fees">🔎 Search Fees</option>
+              <option value="Other">📦 Other</option>
+            </select>
+          </div>
+          <div>
+            <div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:5px">Amount (ex-VAT)</div>
+            <input class="cost-input" type="number" id="acq-amount" placeholder="£0.00" step="0.01" min="0">
+          </div>
+          <div>
+            <div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:5px">Date</div>
+            <input class="cost-input" type="date" id="acq-date">
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:end;">
+          <div>
+            <div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:5px">Supplier / Firm</div>
+            <input class="cost-input" type="text" id="acq-supplier" placeholder="e.g. Brabners LLP, RICS Surveyor...">
+          </div>
+          <div>
+            <div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:5px">Tax Treatment</div>
+            <select class="cost-cat-select" id="acq-treatment" style="width:100%">
+              <option value="capital">Capital (cost base)</option>
+              <option value="revenue">Revenue (deductible)</option>
+            </select>
+          </div>
+          <div>
+            <div style="font-family:DM Mono,monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:5px">Status</div>
+            <select class="cost-cat-select" id="acq-status" style="width:100%">
+              <option value="paid">Paid</option>
+              <option value="outstanding">Outstanding</option>
+            </select>
+          </div>
+          <div style="padding-bottom:1px">
+            <button class="add-cost-btn" id="btn-add-acq" style="width:100%;padding:8px 16px">Add</button>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:10px;">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--muted);">
+            <div class="vat-toggle-wrap"><input type="checkbox" id="acq-vat-toggle" class="vat-toggle-input" checked><span class="vat-toggle-slider"></span></div>
+            VAT reclaimable (enter amount ex-VAT)
+          </label>
+          <div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);line-height:1.7">
+            <strong style="color:var(--text)">Capital</strong> = directly related to buying the business (surveys, searches, stamp duty, deal-related legal) — adds to cost base.<br>
+            <strong style="color:var(--text)">Revenue</strong> = general advisory, ongoing accountancy — deductible against profits.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Breakdown cards -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head"><div class="card-title">Spend by Category</div></div>
+        <div class="card-body"><div id="acq-cat-breakdown"><p style="color:var(--muted);font-family:DM Mono,monospace;font-size:11px;text-align:center;padding:16px 0">No costs logged yet</p></div></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div class="card-title">Capital vs Revenue Split</div></div>
+        <div class="card-body"><div id="acq-treatment-breakdown"><p style="color:var(--muted);font-family:DM Mono,monospace;font-size:11px;text-align:center;padding:16px 0">No costs logged yet</p></div></div>
+      </div>
+    </div>
+
+    <!-- Full list -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">All Acquisition Costs</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted)" id="acq-count">0 items</div>
+          <button id="acq-export-btn" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:4px 10px;border-radius:5px;cursor:pointer;font-family:DM Mono,monospace;font-size:9px;letter-spacing:1px">⬇ EXPORT CSV</button>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="hist-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Description</th>
+              <th>Supplier</th>
+              <th>Category</th>
+              <th>Treatment</th>
+              <th>Amount (ex-VAT)</th>
+              <th>VAT (20%)</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="acq-table-body">
+            <tr><td colspan="9" style="text-align:center;color:var(--muted);padding:20px">No acquisition costs logged yet</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="padding:12px 16px;border-top:1px solid var(--border);background:var(--surface2);">
+        <div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);line-height:1.8" id="acq-accountant-note">Log your costs above to generate a summary for your accountant.</div>
+      </div>
+    </div>
+
+  </div>
+
+</main>
+</div>
+
+<!-- IMPORT MODAL -->
+<div class="modal-overlay" id="import-modal">
+  <div class="modal">
+    <div class="modal-title">Import Motasoft VGM</div>
+    <div class="modal-sub">In Motasoft VGM go to Reports → Sales Invoice Summary → Export CSV. For parts costs use Reports → Purchase Invoice Itemised → Export CSV. Drop the file below or paste.</div>
+    <div class="drop-zone" id="drop-zone">
+      <div style="font-size:32px;margin-bottom:8px">📂</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:4px">Drop CSV here or click to browse</div>
+      <div style="font-family:DM Mono,monospace;font-size:10px;color:var(--muted2)">VGM columns: Customer · Reg · Labour Net · Parts Net · Total Net · VAT · Gross</div>
+      <input type="file" id="csv-file" accept=".csv" style="display:none">
+    </div>
+    <div class="modal-info">Column headers are auto-detected from VGM exports. Labour Net and Parts Net are mapped automatically. You can also paste CSV content below.</div>
+    <textarea id="csv-paste" placeholder="Or paste CSV content here..." style="width:100%;height:80px;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:7px;font-family:DM Mono,monospace;font-size:11px;resize:vertical;outline:none"></textarea>
+    <div id="import-status" style="font-family:DM Mono,monospace;font-size:11px;min-height:18px;margin-top:8px"></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" id="btn-close-import">Cancel</button>
+      <button class="btn-primary" id="btn-do-import">Import Data</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESET MODAL -->
+<div class="modal-overlay" id="reset-modal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-title" style="color:var(--red)">Clear All Data?</div>
+    <div class="modal-sub">Permanently deletes all income, costs, recurring costs, and history. Cannot be undone.</div>
+    <div style="background:var(--surface2);border:1px solid rgba(255,68,68,0.3);border-left:3px solid var(--red);border-radius:6px;padding:12px 16px;font-family:DM Mono,monospace;font-size:11px;color:var(--muted);line-height:1.8;margin-bottom:16px">Type <strong style="color:var(--text)">CLEAR</strong> to confirm</div>
+    <input class="cost-input" type="text" id="reset-confirm" placeholder="Type CLEAR to confirm..." style="width:100%;margin-bottom:4px">
+    <div class="modal-btns">
+      <button class="btn-cancel" id="btn-close-reset">Cancel</button>
+      <button class="btn-danger" id="btn-do-reset">Clear Everything</button>
+    </div>
+  </div>
+</div>
+
+<script>
+
+// Pre-seed acquisition costs - v3
+(function(){
+  try {
+    var existing = localStorage.getItem('gfd4acq');
+    var items = existing ? JSON.parse(existing) : [];
+    var known = [
+      {id:1746403200000,desc:'MacBook Pro 16in M4 48GB 1TB',cat:'IT & Office Equipment',amount:2582.50,date:'2026-05-05',supplier:'Apple Retail UK',treatment:'revenue',status:'paid',vatR:true},
+      {id:1746403200001,desc:'Survey and Schedule of Condition - 180 Washway Rd',cat:'Survey',amount:2250.00,date:'2026-09-10',supplier:'Bradbury Coulthard Ltd',treatment:'capital',status:'paid',vatR:true}
+    ];
+    known.forEach(function(k){
+      if(!items.some(function(i){ return i.id === k.id; })) items.push(k);
+    });
+    localStorage.setItem('gfd4acq', JSON.stringify(items));
+  } catch(e){}
+})();
+
+var DB_KEY='gfd4', REC_KEY='gfd4r';
+var db=JSON.parse(localStorage.getItem(DB_KEY)||'{}');
+var rec=JSON.parse(localStorage.getItem(REC_KEY)||'{"monthly":[],"weekly":[]}');
+var curWeek=wkKey(new Date());
+var pendingImport=null;
+
+var CATS=[
+  {id:'mechanical',name:'Mechanical',color:'var(--green)',icon:'🔧'},
+  {id:'diagnostic',name:'Diagnostics',color:'var(--blue)',icon:'🔍'},
+  {id:'service',name:'Servicing',color:'var(--teal)',icon:'🛢'},
+  {id:'tyres',name:'Tyres',color:'var(--orange)',icon:'⭕'},
+  {id:'bodywork',name:'Bodywork',color:'var(--pink)',icon:'🎨'},
+  {id:'electrical',name:'Electrical',color:'var(--purple)',icon:'⚡'},
+  {id:'mot',name:'MOT',color:'var(--yellow)',icon:'📋'},
+  {id:'other',name:'Other',color:'var(--muted)',icon:'📦'}
+];
+var CICONS={Parts:'🔩',Staff:'👷',Premises:'🏢',Equipment:'🔧',Marketing:'📢',Software:'💻',Fuel:'⛽',Other:'📦'};
+var COLORS=['var(--orange)','var(--red)','var(--yellow)','var(--purple)','var(--blue)','var(--pink)','var(--teal)','var(--muted)'];
+
+function wkKey(d){var x=new Date(d);x.setHours(0,0,0,0);x.setDate(x.getDate()-x.getDay()+1);return x.toISOString().slice(0,10);}
+function wkLabel(k){var s=new Date(k),e=new Date(k);e.setDate(e.getDate()+6);var f=function(d){return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});};return (k===wkKey(new Date())?'This week · ':'')+f(s)+' – '+f(e);}
+function wd(){if(!db[curWeek])db[curWeek]={income:[],costs:[]};return db[curWeek];}
+function save(){localStorage.setItem(DB_KEY,JSON.stringify(db));localStorage.setItem(REC_KEY,JSON.stringify(rec));}
+function fmt(n){return '£'+(Math.abs(n)||0).toFixed(2);}
+function fmtSigned(n){return (n<0?'-':'')+fmt(n);}
+function g(id){return document.getElementById(id);}
+function st(id,v){var e=g(id);if(e)e.textContent=v;}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');}
+
+// PAGE NAV
+var PAGE_TITLES={'hub':'GHM CONTROL','shutter':'SHUTTER','cameras':'CAMERAS','lights':'LIGHTING','environment':'ENVIRONMENT','staff':'STAFF','overview':'WEEKLY FINANCE','income':'INCOME','costs':'COSTS','recurring':'RECURRING','performance':'PERFORMANCE','tax':'TAX','breakeven':'BREAK-EVEN','history':'HISTORY','capital':'CAPITAL ITEMS'};
+function showPage(id){
+  document.querySelectorAll('.page').forEach(function(p){p.style.display='none';});
+  var pg=g('page-'+id);if(pg)pg.style.display='block';
+  document.querySelectorAll('.nav-item,.mob-btn').forEach(function(n){n.classList.toggle('active',n.getAttribute('data-page')===id);});
+  var mt=g('main-title');if(mt){var parts=(PAGE_TITLES[id]||id.toUpperCase()).split(' ');if(parts.length>1){mt.innerHTML=parts.slice(0,-1).join(' ')+' <span>'+parts[parts.length-1]+'</span>';}else{mt.innerHTML='<span>'+parts[0]+'</span>';}}
+  if(id==='hub')updateHubFinance();
+}
+
+// INCOME
+function addIncome(data){wd().income.push(data||{id:Date.now(),desc:'',cat:'mechanical',labour:'',parts:''});save();renderIncome();recalc();}
+function delIncome(id){var w=wd();w.income=w.income.filter(function(e){return e.id!==id;});save();renderIncome();recalc();}
+function updIncome(id,f,v){var e=wd().income.find(function(x){return x.id===id;});if(e){e[f]=v;save();recalc();}}
+function renderIncome(){
+  var el=g('income-entries-list'),w=wd();
+  if(!w.income.length){el.innerHTML='<p style="color:var(--muted);font-family:\'DM Mono\',monospace;font-size:11px;text-align:center;padding:20px 0">No entries yet — add a job or import CSV</p>';return;}
+  el.innerHTML=w.income.map(function(e){
+    var opts=CATS.map(function(c){return '<option value="'+c.id+'"'+(e.cat===c.id?' selected':'')+'>'+c.icon+' '+c.name+'</option>';}).join('');
+    return '<div class="income-entry" data-eid="'+e.id+'">'
+      +'<input class="ie-input" type="text" data-id="'+e.id+'" data-f="desc" value="'+esc(e.desc)+'" placeholder="Job description...">'
+      +'<select class="ie-select" data-id="'+e.id+'" data-f="cat">'+opts+'</select>'
+      +'<input class="ie-input" type="number" data-id="'+e.id+'" data-f="labour" value="'+esc(e.labour)+'" placeholder="Labour £" min="0" step="0.01">'
+      +'<input class="ie-input" type="number" data-id="'+e.id+'" data-f="parts" value="'+esc(e.parts)+'" placeholder="Parts £" min="0" step="0.01">'
+      +'<button class="del-btn" data-di="'+e.id+'">✕</button></div>';
+  }).join('');
+}
+
+// COSTS
+function addCost(){
+  var cat=g('new-cost-cat').value,name=(g('new-cost-name').value||'').trim(),amt=parseFloat(g('new-cost-amount').value)||0;
+  if(!name||!amt)return;
+  wd().costs.push({id:Date.now(),cat:cat,name:name,amount:amt});
+  g('new-cost-name').value='';g('new-cost-amount').value='';
+  save();renderCosts();recalc();
+}
+function delCost(id){
+  var w=wd(),e=w.costs.find(function(c){return String(c.id)===String(id);});
+  if(e&&e._rec){alert('Remove from Recurring page to stop it auto-loading.');return;}
+  w.costs=w.costs.filter(function(c){return String(c.id)!==String(id);});
+  save();renderCosts();recalc();
+}
+function renderCosts(){
+  var el=g('cost-entries-list'),w=wd();
+  if(!w.costs.length){el.innerHTML='<p style="color:var(--muted);font-family:\'DM Mono\',monospace;font-size:11px;text-align:center;padding:20px 0">No costs yet</p>';return;}
+  var grp={};w.costs.forEach(function(c){if(!grp[c.cat])grp[c.cat]=[];grp[c.cat].push(c);});
+  el.innerHTML=Object.keys(grp).map(function(cat){
+    var items=grp[cat],total=items.reduce(function(s,i){return s+i.amount;},0);
+    return '<div style="margin-bottom:12px"><div style="font-family:\'DM Mono\',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:6px">'+(CICONS[cat]||'📦')+' '+cat+' — '+fmt(total)+'</div>'
+      +items.map(function(i){return '<div class="cost-row"><span class="cost-name">'+esc(i.name)+(i._rec?'<span style="font-family:\'DM Mono\',monospace;font-size:9px;color:var(--blue);padding:1px 5px;background:var(--blue-dim);border-radius:3px;margin-left:4px">↻ AUTO</span>':'')+'</span><span class="cost-amount">'+fmt(i.amount)+'</span><button class="cost-del" data-dc="'+i.id+'">'+(i._rec?'–':'✕')+'</button></div>';}).join('')+'</div>';
+  }).join('');
+}
+
+// RECURRING
+function addRec(freq){
+  var p=freq[0],cat=g('r'+p+'-cat').value,name=(g('r'+p+'-name').value||'').trim(),amt=parseFloat(g('r'+p+'-amount').value)||0,vat=g('r'+p+'-vat').checked;
+  if(!name||!amt)return;
+  rec[freq].push({id:Date.now(),cat:cat,name:name,amount:amt,vr:vat});
+  g('r'+p+'-name').value='';g('r'+p+'-amount').value='';g('r'+p+'-vat').checked=false;
+  save();applyRec(curWeek);renderRec();recalc();
+}
+function delRec(freq,id){
+  rec[freq]=rec[freq].filter(function(r){return r.id!==id;});
+  save();applyRec(curWeek);renderRec();recalc();
+}
+function applyRec(wk){
+  if(!db[wk])db[wk]={income:[],costs:[]};
+  var w=db[wk];w.costs=w.costs.filter(function(c){return !c._rec;});
+  rec.monthly.forEach(function(r){w.costs.push({id:'rm'+r.id,cat:r.cat,name:r.name+' (mo÷4.33)',amount:Math.round(r.amount/4.33*100)/100,vr:r.vr,_rec:true});});
+  rec.weekly.forEach(function(r){w.costs.push({id:'rw'+r.id,cat:r.cat,name:r.name,amount:r.amount,vr:r.vr,_rec:true});});
+  save();
+}
+function vBadge(r){return r.vr?'<span style="font-family:\'DM Mono\',monospace;font-size:9px;color:var(--green);padding:1px 5px;background:var(--green-dim);border-radius:3px;margin-left:4px">VAT ✓</span>':'<span style="font-family:\'DM Mono\',monospace;font-size:9px;color:var(--muted);padding:1px 5px;background:var(--surface3);border-radius:3px;margin-left:4px">no VAT</span>';}
+function renderRec(){
+  var ml=g('recurring-monthly-list'),wl=g('recurring-weekly-list');
+  if(!ml||!wl)return;
+  ml.innerHTML=rec.monthly.length?rec.monthly.map(function(r){return '<div class="cost-row"><span class="cost-name">'+esc(r.name)+vBadge(r)+'</span><span style="font-family:\'DM Mono\',monospace;font-size:10px;color:var(--muted);margin-right:6px">'+fmt(r.amount/4.33)+'/wk</span><span class="cost-amount">'+fmt(r.amount)+'/mo</span><button class="cost-del" data-drm="'+r.id+'">✕</button></div>';}).join(''):'<p style="color:var(--muted);font-family:\'DM Mono\',monospace;font-size:11px;text-align:center;padding:12px 0">None set up</p>';
+  wl.innerHTML=rec.weekly.length?rec.weekly.map(function(r){return '<div class="cost-row"><span class="cost-name">'+esc(r.name)+vBadge(r)+'</span><span class="cost-amount">'+fmt(r.amount)+'/wk</span><button class="cost-del" data-drw="'+r.id+'">✕</button></div>';}).join(''):'<p style="color:var(--muted);font-family:\'DM Mono\',monospace;font-size:11px;text-align:center;padding:12px 0">None set up</p>';
+  var sum=g('recurring-summary'),all=[].concat(rec.monthly.map(function(r){return{cat:r.cat,w:r.amount/4.33};}),rec.weekly.map(function(r){return{cat:r.cat,w:r.amount};}));
+  if(!all.length){sum.innerHTML='<p style="color:var(--muted);font-family:\'DM Mono\',monospace;font-size:11px;text-align:center;padding:16px 0">No recurring costs set up yet</p>';return;}
+  var grp={},grand=0;all.forEach(function(a){if(!grp[a.cat])grp[a.cat]=0;grp[a.cat]+=a.w;grand+=a.w;});
+  var i=0,html='';Object.keys(grp).forEach(function(cat){var v=grp[cat],pct=grand?v/grand*100:0,c=COLORS[i++%COLORS.length];html+=brow((CICONS[cat]||'📦')+' '+cat,v,grand,c);});
+  html+='<div style="border-top:1px solid var(--border);margin-top:12px;padding-top:12px;display:flex;justify-content:space-between;align-items:center"><div style="font-family:\'DM Mono\',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase">Total fixed per week</div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:22px;color:var(--orange)">'+fmt(grand)+'</div></div>';
+  html+='<div style="font-family:\'DM Mono\',monospace;font-size:10px;color:var(--muted);text-align:right;margin-top:2px">≈ '+fmt(grand*4.33)+'/month · '+fmt(grand*52)+'/year</div>';
+  sum.innerHTML=html;
+}
+
+// CALC
+function calcWk(k){
+  var w=db[k]||{income:[],costs:[]};
+  var lab=0,pts=0,catMap={};
+  w.income.forEach(function(e){var l=parseFloat(e.labour)||0,p=parseFloat(e.parts)||0;lab+=l;pts+=p;if(!catMap[e.cat])catMap[e.cat]={labour:0,parts:0,jobs:0};catMap[e.cat].labour+=l;catMap[e.cat].parts+=p;catMap[e.cat].jobs++;});
+  var rev=lab+pts,gross=rev*1.2,vatC=gross-rev;
+  var costMap={},costTot=0,vatOR=0;
+  w.costs.forEach(function(c){costTot+=c.amount;if(!costMap[c.cat])costMap[c.cat]=0;costMap[c.cat]+=c.amount;if(c.vr&&c.cat!=='Parts')vatOR+=c.amount*0.20;});
+  var pCost=costMap['Parts']||0,vatOP=pCost*0.20,vatR=vatOP+vatOR,netVat=Math.max(0,vatC-vatR);
+  var profit=rev-costTot,margin=rev?profit/rev*100:0;
+  return {rev,gross,vatC,vatOP,vatOR,vatR,netVat,lab,pts,pCost,costTot,profit,margin,catMap,costMap};
+}
+
+function brow(label,val,total,color){
+  var pct=total?Math.min(100,val/total*100):0;
+  return '<div class="rev-row"><div class="rev-label">'+label+'</div><div class="rev-bar-wrap"><div class="rev-bar" style="width:'+pct+'%;background:'+color+'"></div></div><div class="rev-amount">'+fmt(val)+'</div><div class="rev-pct">'+pct.toFixed(0)+'</div></div>';
+}
+
+function recalc(){
+  var d=calcWk(curWeek);
+  st('kpi-revenue',fmt(d.rev));st('kpi-costs',fmt(d.costTot));st('kpi-profit',fmtSigned(d.profit));
+  st('kpi-margin',d.margin.toFixed(1)+'');st('kpi-vat',fmt(d.netVat));st('kpi-labour',fmt(d.lab));
+  st('kpi-labour-pct',d.rev?(d.lab/d.rev*100).toFixed(0)+' of revenue':'–');
+  st('kpi-parts-inc',fmt(d.pts));st('kpi-parts-pct',d.rev?(d.pts/d.rev*100).toFixed(0)+' of revenue':'–');
+  st('kpi-parts-cost',fmt(d.pCost));
+  var pe=g('kpi-profit');if(pe)pe.style.color=d.profit<0?'var(--red)':'var(--blue)';
+  st('vat-gross',fmt(d.gross));st('vat-collected',fmt(d.vatC));st('vat-reclaim',fmt(d.vatR));st('vat-net',fmt(d.netVat));
+  // Rev breakdown
+  var rb=g('rev-breakdown');
+  if(rb){if(!d.rev){rb.innerHTML='<p style="color:var(--muted);font-family:\'DM Mono\',monospace;font-size:11px;text-align:center;padding:16px 0">No income data yet</p>';}else{var h=brow('Labour',d.lab,d.rev,'var(--teal)')+brow('Parts',d.pts,d.rev,'var(--pink)');CATS.forEach(function(c){var cat=d.catMap[c.id];if(cat)h+=brow(c.icon+' '+c.name,cat.labour+cat.parts,d.rev,c.color);});rb.innerHTML=h;}}
+  // Cost breakdown
+  var cb=g('cost-breakdown');
+  if(cb){if(!d.costTot){cb.innerHTML='<p style="color:var(--muted);font-family:\'DM Mono\',monospace;font-size:11px;text-align:center;padding:16px 0">No cost data yet</p>';}else{var h2='';Object.keys(d.costMap).sort(function(a,b){return d.costMap[b]-d.costMap[a];}).forEach(function(cat,i){h2+=brow((CICONS[cat]||'📦')+' '+cat,d.costMap[cat],d.costTot,COLORS[i%COLORS.length]);});cb.innerHTML=h2;}}
+  // Cat overview
+  var co=g('cat-overview');
+  if(co){var cats=CATS.map(function(c){var cat=d.catMap[c.id];if(!cat)return null;return{id:c.id,name:c.name,color:c.color,icon:c.icon,total:cat.labour+cat.parts,labour:cat.labour,parts:cat.parts,jobs:cat.jobs};}).filter(Boolean).sort(function(a,b){return b.total-a.total;});if(!cats.length){co.innerHTML='<p style="color:var(--muted);font-family:\'DM Mono\',monospace;font-size:11px;text-align:center;padding:16px 0;grid-column:1/-1">Add income entries to see breakdown</p>';}else{var mx=cats[0].total;co.innerHTML=cats.map(function(c,i){return '<div class="cat-card"><div class="cat-name"><span class="cat-dot" style="background:'+c.color+'"></span>'+c.icon+' '+c.name+(i===0?'<span class="badge best-badge">TOP</span>':'')+'</div><div class="cat-revenue" style="color:'+c.color+'">'+fmt(c.total)+'</div><div class="cat-meta">Labour '+fmt(c.labour)+' · Parts '+fmt(c.parts)+' · '+c.jobs+' job'+(c.jobs>1?'s':'')+'</div><div class="cat-bar-wrap"><div class="cat-bar" style="width:'+(mx?c.total/mx*100:0)+';background:'+c.color+'"></div></div></div>';}).join('');}}
+  // Performance
+  var pd=g('perf-detail');
+  if(pd){var cats2=CATS.map(function(c){var cat=d.catMap[c.id];if(!cat)return null;return{id:c.id,name:c.name,color:c.color,icon:c.icon,total:cat.labour+cat.parts,labour:cat.labour,parts:cat.parts,jobs:cat.jobs};}).filter(Boolean).sort(function(a,b){return b.total-a.total;});if(!cats2.length){pd.innerHTML='<p style="color:var(--muted);font-family:\'DM Mono\',monospace;font-size:11px;text-align:center;padding:20px 0">No income data yet</p>';}else{var mx2=cats2[0].total;pd.innerHTML=cats2.map(function(c,i){return '<div style="display:grid;grid-template-columns:28px 1fr 80px 80px 80px 80px;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)"><div style="font-family:\'Bebas Neue\',sans-serif;font-size:18px;color:'+(i===0?'var(--green)':'var(--muted2)')+';">'+(i+1)+'</div><div><div style="font-weight:600;font-size:13px">'+c.icon+' '+c.name+'</div><div style="font-family:\'DM Mono\',monospace;font-size:9px;color:var(--muted);margin-top:3px">'+c.jobs+' job'+(c.jobs>1?'s':'')+'</div><div style="height:3px;background:var(--surface3);border-radius:2px;margin-top:6px;overflow:hidden"><div style="height:100%;width:'+(mx2?c.total/mx2*100:0)+';background:'+c.color+'"></div></div></div><div><div style="font-family:\'DM Mono\',monospace;font-size:9px;color:var(--muted)">REVENUE</div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:16px;color:'+c.color+'">'+fmt(c.total)+'</div></div><div><div style="font-family:\'DM Mono\',monospace;font-size:9px;color:var(--muted)">LABOUR</div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:16px;color:var(--teal)">'+fmt(c.labour)+'</div></div><div><div style="font-family:\'DM Mono\',monospace;font-size:9px;color:var(--muted)">PARTS</div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:16px;color:var(--pink)">'+fmt(c.parts)+'</div></div><div><div style="font-family:\'DM Mono\',monospace;font-size:9px;color:var(--muted)">AVG/JOB</div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:16px;">'+fmt(c.jobs?c.total/c.jobs:0)+'</div></div></div>';}).join('');}}
+  // LP split
+  var lps=g('lp-split');if(lps){if(!d.rev){lps.innerHTML='<p style="color:var(--muted);font-family:\'DM Mono\',monospace;font-size:11px;text-align:center;padding:16px 0">–</p>';}else{var lp=(d.lab/d.rev*100).toFixed(1),pp=(d.pts/d.rev*100).toFixed(1);lps.innerHTML='<div style="display:flex;height:12px;border-radius:6px;overflow:hidden;margin-bottom:14px"><div style="width:'+lp+'%;background:var(--teal)"></div><div style="width:'+pp+'%;background:var(--pink)"></div></div>'+brow('Labour',d.lab,d.rev,'var(--teal)')+brow('Parts income',d.pts,d.rev,'var(--pink)');}}
+  // Parts margin
+  var pmc=g('parts-margin-card');if(pmc){if(!d.pts&&!d.pCost){pmc.innerHTML='<p style="color:var(--muted);font-family:\'DM Mono\',monospace;font-size:11px;text-align:center;padding:16px 0">–</p>';}else{var mg=d.pts?(d.pts-d.pCost)/d.pts*100:0,mc=mg>=30?'var(--green)':mg>=15?'var(--yellow)':'var(--red)';pmc.innerHTML='<div style="text-align:center;padding:12px 0"><div style="font-family:\'Bebas Neue\',sans-serif;font-size:40px;color:'+mc+'">'+mg.toFixed(0)+'</div><div style="font-family:\'DM Mono\',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-top:4px">Parts Margin</div></div>'+brow('Parts charged',d.pts,d.pts,'var(--pink)')+brow('Parts cost',d.pCost,d.pts,'var(--orange)')+brow('Gross profit',d.pts-d.pCost,d.pts,mc);}}
+  renderTax();renderBE();
+}
+
+// TAX
+function renderTax(){
+  var tse=g('tax-year-start');if(tse&&!tse.value){var n=new Date(),y=n.getMonth()>=3?n.getFullYear():n.getFullYear()-1;tse.value=y+'-04-06';}
+  var salary=parseFloat((g('tax-salary')||{}).value)||12570;
+  var tsv=(g('tax-year-start')||{}).value||((new Date().getFullYear()-1)+'-04-06');
+  var txStart=new Date(tsv);
+  var now=new Date(curWeek);
+  var wks=Object.keys(db).sort().filter(function(w){return new Date(w)>=txStart&&new Date(w)<=now;});
+  var ytdR=0,ytdC=0,ytdV=0;wks.forEach(function(w){var d=calcWk(w);ytdR+=d.rev;ytdC+=d.costTot;ytdV+=d.netVat;});
+  var qS=new Date(now.getFullYear(),Math.floor(now.getMonth()/3)*3,1),qV=0;
+  Object.keys(db).forEach(function(w){if(new Date(w)>=qS&&new Date(w)<=now)qV+=calcWk(w).netVat;});
+  var thisV=calcWk(curWeek).netVat;
+  var we=Math.max(1,Math.round((now-txStart)/(7*24*60*60*1000)));
+  var ytdP=ytdR-ytdC,projP=ytdP/we*52;
+  var tax=Math.max(0,projP-salary),ct=0;
+  if(tax<=50000)ct=tax*0.19;else if(tax>=250000)ct=tax*0.25;else ct=tax*0.25-(250000-tax)*(250000-50000)/250000*(0.25-0.19);
+  ct=Math.max(0,ct);
+  var divs=Math.max(0,projP-ct-salary);
+  var sTax=Math.max(0,salary-12570)*0.20,sNI=salary<=12570?0:(Math.min(salary,50270)-12570)*0.08+(salary>50270?(salary-50270)*0.02:0),eNI=Math.max(0,salary-9100)*0.138;
+  var tDivs=Math.max(0,divs-500),dTax=(Math.min(tDivs,Math.max(0,50270-salary))*0.0875)+(Math.max(0,tDivs-Math.max(0,50270-salary))*0.3375);
+  var ptT=sTax+sNI+dTax,ctW=ct/52,ptW=ptT/52;
+  st('tax-vat-week','£'+thisV.toFixed(2));st('tax-vat-ytd','£'+ytdV.toFixed(2));st('tax-vat-quarter','£'+qV.toFixed(2));
+  var qE=new Date(now.getFullYear(),(Math.floor(now.getMonth()/3)+1)*3,0),vD=new Date(qE);vD.setMonth(vD.getMonth()+1);vD.setDate(vD.getDate()+7);
+  st('tax-vat-due',vD.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}));
+  st('ct-annual-profit','£'+Math.round(projP).toLocaleString());st('ct-bill','£'+Math.round(ct).toLocaleString());st('ct-weekly','£'+ctW.toFixed(2));
+  var ctb=g('ct-breakdown');if(ctb)ctb.innerHTML=brow('Taxable profit',tax,projP,'var(--red)')+'<div style="font-family:\'DM Mono\',monospace;font-size:10px;color:var(--muted);margin-top:4px">Rate: '+(tax<=50000?'19%':tax>=250000?'25%':'19–25% marginal')+'</div>';
+  var ptb=g('pt-breakdown');if(ptb)ptb.innerHTML=brow('Salary',salary,salary+divs,'var(--teal)')+brow('Income tax on salary',sTax,ptT,'var(--red)')+brow('Employee NI',sNI,ptT,'var(--red)')+brow('Employer NI (co.)',eNI,ptT,'var(--orange)')+brow('Dividends',divs,salary+divs,'var(--purple)')+brow('Dividend tax',dTax,ptT,'var(--red)');
+  st('pt-bill','£'+Math.round(ptT).toLocaleString());st('pt-weekly','£'+ptW.toFixed(2));
+  st('sum-vat','£'+thisV.toFixed(2));st('sum-ct','£'+ctW.toFixed(2));st('sum-pt','£'+ptW.toFixed(2));
+  var tot=thisV+ctW+ptW;st('sum-total','£'+tot.toFixed(2));
+  var sn=g('sum-note');if(sn&&ytdP>0)sn.innerHTML='Based on <strong style="color:var(--text)">'+we+' weeks</strong> of data. Move <strong style="color:var(--yellow)">£'+thisV.toFixed(2)+'</strong> to VAT account, <strong style="color:var(--red)">£'+ctW.toFixed(2)+'</strong> to corp tax reserve, <strong style="color:var(--orange)">£'+ptW.toFixed(2)+'</strong> to personal tax reserve. <strong style="color:var(--green)">Total: £'+tot.toFixed(2)+'</strong>.';
+}
+
+// BREAK-EVEN
+function renderBE(){
+  var days=parseFloat((g('be-days')||{}).value)||5,hours=parseFloat((g('be-hours')||{}).value)||8,weeks=parseFloat((g('be-weeks')||{}).value)||48,rate=parseFloat((g('be-rate')||{}).value)||75;
+  var dpy=days*weeks;
+  var fw=rec.monthly.reduce(function(s,r){return s+r.amount/4.33;},0)+rec.weekly.reduce(function(s,r){return s+r.amount;},0);
+  var af=fw*weeks,wks2=Object.keys(db),vt=0;
+  wks2.forEach(function(w){(db[w].costs||[]).forEach(function(c){if(!c._rec)vt+=c.amount||0;});});
+  var av=wks2.length?vt/wks2.length:0,av2=av*weeks,sal=parseFloat((g('tax-salary')||{}).value)||12570;
+  var annTot=af+av2+sal,dc=dpy>0?annTot/dpy:0,beh=rate>0?dc/rate:0;
+  st('be-daily-cost','£'+Math.ceil(dc).toLocaleString());st('be-daily-revenue','£'+Math.ceil(dc).toLocaleString());st('be-daily-hours',beh.toFixed(1)+'h');
+  var bbc=g('be-cost-breakdown');
+  if(bbc){var src=[];if(af/dpy>0)src.push({l:'Fixed overheads',v:af/dpy,c:'var(--orange)'});if(av2/dpy>0)src.push({l:'Variable (avg)',v:av2/dpy,c:'var(--red)'});if(sal/dpy>0)src.push({l:'Your salary',v:sal/dpy,c:'var(--purple)'});bbc.innerHTML=src.length?src.map(function(r){return brow(r.l,r.v,dc,r.c);}).join(''):'<p style="color:var(--muted);font-family:\'DM Mono\',monospace;font-size:11px;text-align:center;padding:16px 0">Add recurring costs to see breakdown</p>';}
+  var bt=g('be-targets');
+  if(bt){bt.innerHTML='<div style="font-family:\'DM Mono\',monospace;font-size:9px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;margin-bottom:10px">Daily revenue needed for…</div>'+[{l:'Break-even (0%)',v:dc,c:'var(--muted)'},{l:'10% profit margin',v:dc*1.1,c:'var(--teal)'},{l:'20% profit margin',v:dc*1.2,c:'var(--blue)'},{l:'30% profit margin',v:dc*1.3,c:'var(--green)'}].map(function(t){return '<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)"><div><div style="font-size:12px;font-weight:500;color:'+t.c+'">'+t.l+'</div><div style="font-family:\'DM Mono\',monospace;font-size:9px;color:var(--muted);margin-top:2px">'+(t.v/rate).toFixed(1)+' hrs @ £'+rate+'/hr</div></div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:22px;color:'+t.c+'">£'+Math.ceil(t.v).toLocaleString()+'</div></div>';}).join('');}
+  var tw=calcWk(curWeek),wt=dc*days,pct=wt>0?Math.min(100,tw.rev/wt*100):0,sur=tw.rev-wt,dCov=dc>0?Math.floor(tw.rev/dc):0,pc=pct>=100?'var(--green)':pct>=60?'var(--yellow)':'var(--red)';
+  st('be-week-label',wkLabel(curWeek));
+  var bwp=g('be-week-progress');
+  if(bwp)bwp.innerHTML='<div style="margin-bottom:16px"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><div style="font-family:\'DM Mono\',monospace;font-size:10px;color:var(--muted)">Weekly revenue vs break-even target</div><div style="font-family:\'DM Mono\',monospace;font-size:11px;color:'+pc+'">'+pct.toFixed(0)+'</div></div><div style="height:10px;background:var(--surface3);border-radius:5px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+pc+';border-radius:5px"></div></div><div style="display:flex;justify-content:space-between;font-family:\'DM Mono\',monospace;font-size:9px;color:var(--muted);margin-top:4px"><span>£0</span><span>Target: £'+Math.ceil(wt).toLocaleString()+'</span></div></div><div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px"><div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center"><div style="font-family:\'DM Mono\',monospace;font-size:9px;color:var(--muted);margin-bottom:4px">REVENUE</div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:20px;color:var(--green)">£'+Math.round(tw.rev).toLocaleString()+'</div></div><div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center"><div style="font-family:\'DM Mono\',monospace;font-size:9px;color:var(--muted);margin-bottom:4px">TARGET</div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:20px;color:var(--blue)">£'+Math.ceil(wt).toLocaleString()+'</div></div><div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center"><div style="font-family:\'DM Mono\',monospace;font-size:9px;color:var(--muted);margin-bottom:4px">'+(sur>=0?'SURPLUS':'SHORTFALL')+'</div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:20px;color:'+(sur>=0?'var(--green)':'var(--red)')+'">'+( sur>=0?'+':'-')+'£'+Math.abs(Math.round(sur)).toLocaleString()+'</div></div><div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center"><div style="font-family:\'DM Mono\',monospace;font-size:9px;color:var(--muted);margin-bottom:4px">DAYS COVERED</div><div style="font-family:\'Bebas Neue\',sans-serif;font-size:20px;color:var(--teal)">'+dCov+' / '+days+'</div></div></div>'+(pct>=100?'<div style="margin-top:12px;background:var(--green-dim);border:1px solid rgba(0,212,138,0.2);border-radius:6px;padding:10px 14px;font-family:\'DM Mono\',monospace;font-size:11px;color:var(--green)">✓ Break-even reached this week!</div>':'<div style="margin-top:12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:10px 14px;font-family:\'DM Mono\',monospace;font-size:11px;color:var(--muted)">Need £'+Math.ceil(Math.max(0,wt-tw.rev)).toLocaleString()+' more to cover all costs this week</div>');
+}
+
+// HISTORY
+function renderHist(){
+  var tb=g('history-body'),wks=Object.keys(db).sort().reverse();
+  if(!wks.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">No history yet</td></tr>';return;}
+  tb.innerHTML=wks.map(function(wk){
+    var d=calcWk(wk),bc=Object.keys(d.catMap).sort(function(a,b){return(d.catMap[b].labour+d.catMap[b].parts)-(d.catMap[a].labour+d.catMap[a].parts);})[0];
+    var bci=bc?CATS.find(function(c){return c.id===bc;}):null,isCur=wk===curWeek;
+    return '<tr style="'+(isCur?'background:rgba(0,212,138,0.04)':'')+'"><td style="'+(isCur?'color:var(--green)':'')+'">'+wkLabel(wk)+'</td><td style="color:var(--green)">'+fmt(d.rev)+'</td><td style="color:var(--orange)">'+fmt(d.costTot)+'</td><td style="color:'+(d.profit<0?'var(--red)':'var(--blue)')+'">'+fmtSigned(d.profit)+'</td><td style="color:'+(d.margin>=20?'var(--green)':d.margin>=10?'var(--yellow)':'var(--red)')+'">'+d.margin.toFixed(1)+'</td><td style="color:var(--yellow)">'+fmt(d.netVat)+'</td><td>'+(bci?bci.icon+' '+bci.name:'–')+'</td></tr>';
+  }).join('');
+}
+
+// CSV
+function openImport(){var m=g('import-modal');if(m)m.classList.add('open');}
+function closeImport(){var m=g('import-modal');if(m)m.classList.remove('open');pendingImport=null;var p=g('csv-paste');if(p)p.value='';st('import-status','');}
+function parseCSV(txt){
+  var lines=txt.trim().split('\n').map(function(l){
+    // Handle quoted CSV fields properly
+    var result=[],cur='',inQ=false;
+    for(var i=0;i<l.length;i++){
+      if(l[i]==='"'){inQ=!inQ;}
+      else if(l[i]===','&&!inQ){result.push(cur.trim());cur='';}
+      else{cur+=l[i];}
+    }
+    result.push(cur.trim());
+    return result;
+  });
+  if(lines.length<2){showIS('❌ File empty or invalid',false);return;}
+  var h=lines[0].map(function(x){return x.toLowerCase().replace(/"/g,'');});
+
+  // Detect column indices — supports Motasoft VGM and generic formats
+  var di=-1,ci=-1,li=-1,pi=-1,ti=-1,regi=-1,cusi=-1;
+  h.forEach(function(x,i){
+    if(x.includes('customer')||x.includes('name'))cusi=i;
+    if(x==='reg'||x.includes('registr')||x.includes('vrm'))regi=i;
+    if(x.includes('desc')||x.includes('job'))di=i;
+    if(x.includes('cat')||x.includes('type'))ci=i;
+    if(x==='labour net'||x==='labour'||x.includes('labor'))li=i;
+    if(x==='parts net'||x==='parts'||x.includes('part net'))pi=i;
+    if(x==='total net'||x==='total'||x.includes('amount'))ti=i;
+  });
+
+  var parsed=[];
+  for(var i=1;i<lines.length;i++){
+    var r=lines[i];
+    if(!r.length||!r[0])continue;
+    // Build description from customer + reg if available (VGM format)
+    var desc='';
+    if(cusi>=0&&r[cusi])desc+=r[cusi];
+    if(regi>=0&&r[regi])desc+=(desc?' · ':'')+r[regi];
+    if(di>=0&&r[di])desc+=(desc?' — ':'')+r[di];
+    if(!desc)desc=r[0]||'Imported job';
+    var cat='other',cs=ci>=0?r[ci].toLowerCase():'';
+    var lab=li>=0?parseFloat(r[li])||0:0;
+    var prt=pi>=0?parseFloat(r[pi])||0:0;
+    var tot=ti>=0?parseFloat(r[ti])||0:0;
+    var lf=lab||(li<0&&pi<0?tot:lab);
+    // Auto-detect category from description
+    var dl=desc.toLowerCase();
+    if(cs.includes('mech')||dl.includes('repair')||dl.includes('mech'))cat='mechanical';
+    else if(cs.includes('diag')||dl.includes('diag'))cat='diagnostic';
+    else if(cs.includes('serv')||dl.includes('service')||dl.includes('oil'))cat='service';
+    else if(cs.includes('tyre')||cs.includes('tire')||dl.includes('tyre'))cat='tyres';
+    else if(cs.includes('body')||dl.includes('bodywork')||dl.includes('paint'))cat='bodywork';
+    else if(cs.includes('elect')||dl.includes('electric'))cat='electrical';
+    else if(cs.includes('mot')||dl.includes(' mot '))cat='mot';
+    if(lf||prt)parsed.push({id:Date.now()+i,desc:desc,cat:cat,labour:lf||'',parts:prt||''});
+  }
+  if(!parsed.length){showIS('⚠ No valid rows found — check you exported Sales Invoice Summary from VGM Reports',false);return;}
+  pendingImport=parsed;showIS('✓ Found '+parsed.length+' job'+(parsed.length>1?'s':'')+' ready to import',true);
+}
+function showIS(msg,ok){var s=g('import-status');if(s){s.textContent=msg;s.style.color=ok?'var(--green)':'var(--yellow)';}}
+function doImport(){var p=(g('csv-paste')||{}).value;if(p&&p.trim()&&!pendingImport)parseCSV(p.trim());if(!pendingImport){showIS('⚠ No data to import',false);return;}wd().income.push.apply(wd().income,pendingImport);save();closeImport();renderAll();}
+
+// RESET
+function openReset(){var m=g('reset-modal');if(m)m.classList.add('open');var r=g('reset-confirm');if(r)r.value='';var b=g('btn-do-reset');if(b)b.style.opacity='0.4';}
+function closeReset(){var m=g('reset-modal');if(m)m.classList.remove('open');}
+function doReset(){var rc=g('reset-confirm');if(!rc||rc.value!=='CLEAR')return;db={};rec={monthly:[],weekly:[]};localStorage.removeItem(DB_KEY);localStorage.removeItem(REC_KEY);closeReset();renderAll();showPage('overview');}
+
+// RENDER ALL
+function renderAll(){
+  st('weekLabel',wkLabel(curWeek));
+  applyRec(curWeek);
+  renderIncome();renderCosts();renderRec();recalc();renderHist();
+  updateHubFinance();
+}
+
+// ── CAPITAL / AIA TRACKER ─────────────────────────────────────────────────────
+var CAP_KEY='gfd4c';
+var capItems=JSON.parse(localStorage.getItem(CAP_KEY)||'[]');
+var AIA_LIMIT=1000000;
+var CAT_COLORS={'Diagnostic Equipment':'var(--blue)','Hand & Power Tools':'var(--orange)','IT & Office Equipment':'var(--teal)','Courtesy & Pool Vehicles':'var(--pink)','Premises Improvements':'var(--purple)','Signage & Marketing':'var(--yellow)','Fuel':'var(--green)'};
+
+function saveCapital(){localStorage.setItem(CAP_KEY,JSON.stringify(capItems));}
+
+function addCapital(){
+  var desc=(g('cap-desc').value||'').trim(),cat=g('cap-cat').value,date=g('cap-date').value,cost=parseFloat(g('cap-cost').value)||0,aia=g('cap-aia').checked;
+  if(!desc||!cost||!date){alert('Please fill in description, date and cost.');return;}
+  capItems.push({id:Date.now(),desc:desc,cat:cat,date:date,cost:cost,aia:aia});
+  g('cap-desc').value='';g('cap-cost').value='';
+  saveCapital();renderCapital();
+}
+
+function delCapital(id){
+  capItems=capItems.filter(function(i){return i.id!==id;});
+  saveCapital();renderCapital();
+}
+
+function renderCapital(){
+  var totalSpent=0,aiaUsed=0,totalVat=0,catSpend={},catAia={};
+  capItems.forEach(function(i){
+    totalSpent+=i.cost;totalVat+=i.cost*0.20;
+    if(i.aia)aiaUsed+=i.cost;
+    if(!catSpend[i.cat])catSpend[i.cat]=0;catSpend[i.cat]+=i.cost;
+    if(!catAia[i.cat])catAia[i.cat]=0;if(i.aia)catAia[i.cat]+=i.cost;
+  });
+  var taxSaved=aiaUsed*0.19,aiaLeft=Math.max(0,AIA_LIMIT-aiaUsed),pct=Math.min(100,aiaUsed/AIA_LIMIT*100);
+  var barColor=pct>80?'var(--red)':pct>50?'var(--yellow)':'var(--purple)';
+  st('aia-total-spent','£'+Math.round(totalSpent).toLocaleString());
+  st('aia-remaining','£'+Math.round(aiaLeft).toLocaleString());
+  st('aia-tax-saved','£'+Math.round(taxSaved).toLocaleString());
+  st('aia-vat-reclaim','£'+Math.round(totalVat).toLocaleString());
+  var pb=g('aia-progress-bar');if(pb){pb.style.width=pct+'%';pb.style.background=barColor;}
+  st('aia-progress-label','£'+Math.round(aiaUsed).toLocaleString()+' of £1,000,000 AIA used');
+  st('aia-progress-pct',pct.toFixed(1)+'');
+  var now2=new Date(),yr=now2.getMonth()>=3?now2.getFullYear():now2.getFullYear()-1;
+  st('aia-year-label','Tax year: Apr '+yr+' – Apr '+(yr+1));
+  var sn=g('aia-summary-note');
+  if(sn){if(!capItems.length){sn.textContent='Add capital purchases below to see your AIA position.';}
+  else{sn.innerHTML='You have spent <strong style="color:var(--purple)">£'+Math.round(aiaUsed).toLocaleString()+'</strong> on AIA-qualifying items, saving <strong style="color:var(--blue)">£'+Math.round(taxSaved).toLocaleString()+'</strong> in corporation tax. You have <strong style="color:var(--green)">£'+Math.round(aiaLeft).toLocaleString()+'</strong> of AIA remaining this tax year. You can also reclaim <strong style="color:var(--yellow)">£'+Math.round(totalVat).toLocaleString()+'</strong> in input VAT.';}}
+  var csb=g('cap-cat-breakdown');
+  if(csb){if(!capItems.length){csb.innerHTML='<p style="color:var(--muted);font-family:\'DM Mono\',monospace;font-size:11px;text-align:center;padding:16px 0">No purchases yet</p>';}
+  else{var h='';Object.keys(catSpend).sort(function(a,b){return catSpend[b]-catSpend[a];}).forEach(function(cat){var c=CAT_COLORS[cat]||'var(--muted)';h+=brow(cat,catSpend[cat],totalSpent,c);});csb.innerHTML=h;}}
+  var ctb=g('cap-tax-breakdown');
+  if(ctb){var totalTax=Object.keys(catAia).reduce(function(s,k){return s+catAia[k]*0.19;},0);
+  if(!capItems.length||!totalTax){ctb.innerHTML='<p style="color:var(--muted);font-family:\'DM Mono\',monospace;font-size:11px;text-align:center;padding:16px 0">No AIA-qualifying items yet</p>';}
+  else{var h2='';Object.keys(catAia).sort(function(a,b){return catAia[b]-catAia[a];}).forEach(function(cat){if(catAia[cat]>0){var c=CAT_COLORS[cat]||'var(--muted)';h2+=brow(cat,catAia[cat]*0.19,totalTax,c);}});ctb.innerHTML=h2;}}
+  var tb=g('cap-table-body');
+  st('cap-count',capItems.length+' item'+(capItems.length!==1?'s':''));
+  if(!tb)return;
+  if(!capItems.length){tb.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:20px">No purchases logged yet</td></tr>';return;}
+  var sorted=capItems.slice().sort(function(a,b){return new Date(b.date)-new Date(a.date);});
+  tb.innerHTML=sorted.map(function(i){
+    var vat=i.cost*0.20,ts=i.aia?i.cost*0.19:0,c=CAT_COLORS[i.cat]||'var(--muted)';
+    var ds=new Date(i.date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+    return '<tr><td>'+ds+'</td><td style="font-weight:500">'+esc(i.desc)+'</td>'
+      +'<td><span style="font-family:\'DM Mono\',monospace;font-size:9px;color:'+c+';padding:2px 7px;border-radius:4px;border:1px solid '+c+';opacity:0.85">'+i.cat+'</span></td>'
+      +'<td style="font-family:\'DM Mono\',monospace;color:var(--purple)">'+fmt(i.cost)+'</td>'
+      +'<td style="font-family:\'DM Mono\',monospace;color:var(--yellow)">'+fmt(vat)+'</td>'
+      +'<td style="font-family:\'DM Mono\',monospace;color:'+(i.aia?'var(--green)':'var(--muted)')+';">'+(i.aia?'✓ Yes':'✗ No')+'</td>'
+      +'<td style="font-family:\'DM Mono\',monospace;color:var(--blue)">'+(ts>0?fmt(ts):'–')+'</td>'
+      +'<td><button class="cost-del" data-dcap="'+i.id+'">✕</button></td></tr>';
+  }).join('');
+}
+
+// ── STAFF & HOLIDAY ───────────────────────────────────────────────────────────
+var STAFF_KEY='gfd4s', HOL_KEY='gfd4h';
+var staffList = JSON.parse(localStorage.getItem(STAFF_KEY) || JSON.stringify([
+  {id:1, name:'Joe Hamlett', role:'Director', initials:'JH', color:'var(--green)'},
+  {id:2, name:'Staff Member 2', role:'Technician', initials:'S2', color:'var(--blue)'},
+  {id:3, name:'Staff Member 3', role:'Technician', initials:'S3', color:'var(--orange)'}
+]));
+var holidays = JSON.parse(localStorage.getItem(HOL_KEY) || '[]');
+var HOL_ENTITLEMENT = 28;
+var calYear = new Date().getFullYear();
+var calMonth = new Date().getMonth();
+var STAFF_COLORS = ['var(--green)','var(--blue)','var(--orange)','var(--purple)','var(--pink)','var(--teal)'];
+var showAddStaffForm = false;
+
+function saveStaff(){ localStorage.setItem(STAFF_KEY, JSON.stringify(staffList)); }
+function saveHolidays(){ localStorage.setItem(HOL_KEY, JSON.stringify(holidays)); }
+
+function getInitials(name){
+  var parts = name.trim().split(' ');
+  return parts.length >= 2 ? (parts[0][0]+parts[parts.length-1][0]).toUpperCase() : name.slice(0,2).toUpperCase();
+}
+
+function countWorkingDays(from, to){
+  var start = new Date(from), end = new Date(to), count = 0;
+  var cur = new Date(start);
+  while(cur <= end){
+    var d = cur.getDay();
+    if(d !== 0 && d !== 6) count++;
+    cur.setDate(cur.getDate()+1);
+  }
+  return count;
+}
+
+function getStaffHolidays(staffId, year){
+  return holidays.filter(function(h){
+    return h.staffId === staffId && new Date(h.from).getFullYear() === year;
+  });
+}
+
+function getDaysUsed(staffId, year){
+  return getStaffHolidays(staffId, year).reduce(function(s,h){ return s + h.days; }, 0);
+}
+
+function renderStaffList(){
+  var el = g('staff-list');
+  if(!el) return;
+  if(!staffList.length){ el.innerHTML = '<p style="color:var(--muted);font-family:DM Mono,monospace;font-size:11px;text-align:center;padding:12px 0">No staff added yet</p>'; return; }
+  el.innerHTML = staffList.map(function(s){
+    var used = getDaysUsed(s.id, calYear);
+    var left = HOL_ENTITLEMENT - used;
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">'
+      +'<div style="display:flex;align-items:center;gap:10px">'
+      +'<div style="width:32px;height:32px;border-radius:50%;background:'+s.color.replace(')',',0.15)').replace('var(--','rgba(').replace('green','0,212,138').replace('blue','61,155,255').replace('orange','255,107,43').replace('purple','167,139,250').replace('pink','244,114,182').replace('teal','45,212,191')+';border:1px solid '+s.color+';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:'+s.color+'">'+s.initials+'</div>'
+      +'<div><div style="font-size:13px;font-weight:500">'+esc(s.name)+'</div><div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted)">'+esc(s.role)+'</div></div>'
+      +'</div>'
+      +'<div style="display:flex;align-items:center;gap:10px">'
+      +'<div style="text-align:right"><div style="font-family:DM Mono,monospace;font-size:10px;color:'+s.color+'">'+used+' days used</div><div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted)">'+left+' remaining</div></div>'
+      +'<button data-del-staff="'+s.id+'" style="background:none;border:none;color:var(--muted2);cursor:pointer;font-size:13px;padding:2px 4px">✕</button>'
+      +'</div></div>';
+  }).join('');
+  // Update staff select in booking form
+  var sel = g('hol-staff');
+  if(sel) sel.innerHTML = staffList.map(function(s){ return '<option value="'+s.id+'">'+esc(s.name)+'</option>'; }).join('');
+}
+
+function renderHolidaySummary(){
+  var el = g('holiday-summary');
+  if(!el) return;
+  if(!staffList.length){ el.innerHTML = '<p style="color:var(--muted);font-family:DM Mono,monospace;font-size:11px;text-align:center;padding:12px 0">Add staff to see holiday summary</p>'; return; }
+  el.innerHTML = staffList.map(function(s){
+    var used = getDaysUsed(s.id, calYear);
+    var pct = Math.min(100, used/HOL_ENTITLEMENT*100);
+    var barColor = pct >= 90 ? 'var(--red)' : pct >= 70 ? 'var(--yellow)' : s.color;
+    return '<div style="margin-bottom:12px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">'
+      +'<div style="font-size:12px;font-weight:500">'+esc(s.name)+'</div>'
+      +'<div style="font-family:DM Mono,monospace;font-size:10px;color:var(--muted)">'+used+' / '+HOL_ENTITLEMENT+' days</div>'
+      +'</div>'
+      +'<div style="height:6px;background:var(--surface3);border-radius:3px;overflow:hidden">'
+      +'<div style="height:100%;width:'+pct+'%;background:'+barColor+';border-radius:3px;transition:width 0.5s ease"></div>'
+      +'</div>'
+      +'<div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);margin-top:3px">'+( HOL_ENTITLEMENT-used)+' days remaining</div>'
+      +'</div>';
+  }).join('');
+}
+
+function renderCalendar(){
+  var el = g('cal-grid');
+  var label = g('cal-month-label');
+  if(!el) return;
+
+  var monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  if(label) label.textContent = monthNames[calMonth] + ' ' + calYear;
+
+  var firstDay = new Date(calYear, calMonth, 1).getDay();
+  firstDay = firstDay === 0 ? 6 : firstDay - 1; // Mon start
+  var daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+
+  // Build holiday map for this month
+  var holMap = {}; // date string -> [{staff, color}]
+  holidays.forEach(function(h){
+    var from = new Date(h.from), to = new Date(h.to);
+    var cur = new Date(from);
+    while(cur <= to){
+      if(cur.getMonth() === calMonth && cur.getFullYear() === calYear){
+        var key = cur.getDate();
+        if(!holMap[key]) holMap[key] = [];
+        var s = staffList.find(function(x){ return x.id === h.staffId; });
+        if(s) holMap[key].push({name:s.initials, color:s.color, id:h.id});
+      }
+      cur.setDate(cur.getDate()+1);
+    }
+  });
+
+  var today = new Date();
+  var html = '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px">';
+  // Day headers
+  ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(function(d){
+    html += '<div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);text-align:center;padding:4px 0;letter-spacing:1px">'+d+'</div>';
+  });
+  // Blank cells
+  for(var i=0;i<firstDay;i++) html += '<div></div>';
+  // Day cells
+  for(var day=1;day<=daysInMonth;day++){
+    var date = new Date(calYear, calMonth, day);
+    var isWeekend = date.getDay() === 0 || date.getDay() === 6;
+    var isToday = today.getDate()===day && today.getMonth()===calMonth && today.getFullYear()===calYear;
+    var hols = holMap[day] || [];
+    html += '<div style="min-height:42px;background:'+(isWeekend?'var(--surface2)':'var(--surface)')+';border:1px solid '+(isToday?'var(--green)':'var(--border)')+';border-radius:5px;padding:3px 4px;position:relative">'
+      +'<div style="font-family:DM Mono,monospace;font-size:9px;color:'+(isToday?'var(--green)':isWeekend?'var(--muted2)':'var(--muted)')+';margin-bottom:2px">'+day+'</div>'
+      + hols.map(function(h){
+          return '<div style="font-size:8px;font-weight:600;color:#000;background:'+h.color+';border-radius:3px;padding:1px 4px;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer" data-del-hol="'+h.id+'" title="Click to remove">'+h.name+'</div>';
+        }).join('')
+      +'</div>';
+  }
+  html += '</div>';
+  el.innerHTML = html;
+
+  // Bind delete holiday from calendar
+  el.querySelectorAll('[data-del-hol]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var id = parseInt(btn.getAttribute('data-del-hol'));
+      if(confirm('Remove this holiday booking?')){
+        holidays = holidays.filter(function(h){ return h.id !== id; });
+        saveHolidays(); renderStaff();
+      }
+    });
+  });
+}
+
+function bookHoliday(){
+  var staffId = parseInt((g('hol-staff')||{}).value);
+  var from = (g('hol-from')||{}).value;
+  var to = (g('hol-to')||{}).value;
+  var fb = g('hol-feedback');
+  if(!staffId||!from||!to){ if(fb){ fb.textContent='Please select a staff member and both dates.'; fb.style.color='var(--red)'; } return; }
+  if(new Date(from) > new Date(to)){ if(fb){ fb.textContent='Start date must be before end date.'; fb.style.color='var(--red)'; } return; }
+  var days = countWorkingDays(from, to);
+  var used = getDaysUsed(staffId, new Date(from).getFullYear());
+  if(used + days > HOL_ENTITLEMENT){ if(fb){ fb.textContent='Not enough holiday remaining. Used: '+used+' days, Requesting: '+days+' days, Allowance: '+HOL_ENTITLEMENT+' days.'; fb.style.color='var(--red)'; } return; }
+  holidays.push({ id: Date.now(), staffId: staffId, from: from, to: to, days: days });
+  saveHolidays();
+  if(fb){ fb.textContent='Booked '+days+' working day'+(days!==1?'s':'')+' holiday.'; fb.style.color='var(--green)'; }
+  // Navigate calendar to booked month
+  var d = new Date(from); calYear = d.getFullYear(); calMonth = d.getMonth();
+  renderStaff();
+}
+
+function addStaff(){
+  var name = (g('new-staff-name')||{}).value||'';
+  var role = (g('new-staff-role')||{}).value||'';
+  name = name.trim(); role = role.trim();
+  if(!name) return;
+  var color = STAFF_COLORS[staffList.length % STAFF_COLORS.length];
+  staffList.push({ id: Date.now(), name: name, role: role||'Staff', initials: getInitials(name), color: color });
+  saveStaff();
+  var nm = g('new-staff-name'); if(nm) nm.value='';
+  var rl = g('new-staff-role'); if(rl) rl.value='';
+  showAddStaffForm = false;
+  var form = g('add-staff-form'); if(form) form.style.display='none';
+  renderStaff();
+}
+
+function renderStaff(){
+  renderStaffList();
+  renderHolidaySummary();
+  renderCalendar();
+}
+
+function initStaffListeners(){
+  var btnAdd = g('btn-add-staff');
+  if(btnAdd) btnAdd.addEventListener('click', function(){
+    showAddStaffForm = !showAddStaffForm;
+    var form = g('add-staff-form');
+    if(form) form.style.display = showAddStaffForm ? 'block' : 'none';
+  });
+  var btnSave = g('btn-save-staff');
+  if(btnSave) btnSave.addEventListener('click', addStaff);
+  var btnBook = g('btn-book-hol');
+  if(btnBook) btnBook.addEventListener('click', bookHoliday);
+  var calPrev = g('cal-prev');
+  if(calPrev) calPrev.addEventListener('click', function(){ calMonth--; if(calMonth<0){calMonth=11;calYear--;} renderCalendar(); });
+  var calNext = g('cal-next');
+  if(calNext) calNext.addEventListener('click', function(){ calMonth++; if(calMonth>11){calMonth=0;calYear++;} renderCalendar(); });
+  // Delete staff via delegation
+  document.addEventListener('click', function(e){
+    var ds = e.target.getAttribute('data-del-staff');
+    if(ds){
+      var id = parseInt(ds);
+      if(confirm('Remove this staff member and all their holiday bookings?')){
+        staffList = staffList.filter(function(s){ return s.id !== id; });
+        holidays = holidays.filter(function(h){ return h.staffId !== id; });
+        saveStaff(); saveHolidays(); renderStaff();
+      }
+    }
+  });
+}
+
+
+// ── CONTROL CENTRE ────────────────────────────────────────────────────────────
+var shutterPos=100, shutterMoving=false, shutterTimer=null;
+var lights=[
+  {name:'Workshop',zone:'Main bay',on:true,bright:100},
+  {name:'Ramp bay',zone:'Inspection',on:true,bright:80},
+  {name:'Reception',zone:'Front of house',on:true,bright:70},
+  {name:'Office',zone:'Admin',on:false,bright:60},
+  {name:'Forecourt',zone:'External',on:false,bright:100},
+  {name:'External',zone:'Security',on:false,bright:100}
+];
+
+function updateCamTimestamps(){
+  var n=new Date(),h=n.getHours().toString().padStart(2,'0'),m=n.getMinutes().toString().padStart(2,'0'),s=n.getSeconds().toString().padStart(2,'0'),ts=h+':'+m+':'+s;
+  ['cam-ts1','cam-ts2','cam-ts3','cam-ts4'].forEach(function(id){var e=g(id);if(e)e.textContent=ts;});
+}
+setInterval(updateCamTimestamps,1000);updateCamTimestamps();
+
+function setShutter(target){
+  if(shutterTimer)clearInterval(shutterTimer);
+  shutterMoving=true;
+  var dir=target>shutterPos?1:-1;
+  var n=new Date(),t=n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0');
+  var lastEl=g('sh-last');if(lastEl)lastEl.textContent=(dir>0?'Opened ':'Closed ')+t;
+  var movTxt=g('sh-moving-txt');if(movTxt)movTxt.textContent=dir>0?'Opening…':'Closing…';
+  shutterTimer=setInterval(function(){
+    shutterPos+=dir*2;
+    if((dir>0&&shutterPos>=target)||(dir<0&&shutterPos<=target)){shutterPos=target;shutterMoving=false;clearInterval(shutterTimer);}
+    updateShutterUI();
+  },40);
+}
+
+function stopShutter(){if(shutterTimer)clearInterval(shutterTimer);shutterMoving=false;updateShutterUI();}
+
+function updateShutterUI(){
+  var p=Math.round(shutterPos);
+  var slatH=(100-p)+'', openH=p+'%';
+  // Hub door
+  var hs=g('hub-slats');if(hs)hs.style.height=slatH;
+  var ho=g('hub-opening');if(ho)ho.style.height=openH;
+  var hdp=g('hub-door-pct');if(hdp)hdp.textContent=p+'%';
+  // Shutter page door
+  var ss=g('sh-slats');if(ss)ss.style.height=slatH;
+  var so=g('sh-opening');if(so)so.style.height=openH;
+  var spb=g('sh-pct-big');if(spb)spb.textContent=p+'%';
+  var spd=g('sh-pos-disp');if(spd)spd.textContent=p+'%';
+  var stl=g('sh-state');if(stl)stl.textContent=p===100?'Fully open':p===0?'Fully closed':p+'% open';
+  // Sliders
+  var hsl=g('hub-slider');if(hsl)hsl.value=p;
+  var hsv=g('hub-slider-val');if(hsv)hsv.textContent=p+'%';
+  var psl=g('sh-page-slider');if(psl)psl.value=p;
+  var psv=g('sh-page-slider-val');if(psv)psv.textContent=p+'%';
+  // Status text
+  var hvs=g('hub-shutter-val');if(hvs)hvs.textContent=p===100?'OPEN':p===0?'CLOSED':p+'%';
+  var hss=g('hub-shutter-sub');if(hss)hss.textContent=p+'% open';
+  var hbadge=g('hub-shutter-badge');
+  if(hbadge){
+    if(shutterMoving){hbadge.textContent='Moving…';hbadge.style.color='var(--yellow)';hbadge.style.background='var(--yellow-dim)';}
+    else if(p===100){hbadge.textContent='Open';hbadge.style.color='var(--green)';hbadge.style.background='var(--green-dim)';}
+    else if(p===0){hbadge.textContent='Closed';hbadge.style.color='var(--red)';hbadge.style.background='var(--red-dim)';}
+    else{hbadge.textContent=p+'% open';hbadge.style.color='var(--yellow)';hbadge.style.background='var(--yellow-dim)';}
+  }
+  var mstrip=g('sh-moving-strip');if(mstrip)mstrip.style.display=shutterMoving?'flex':'none';
+}
+
+function renderLightsGrid(containerId){
+  var grid=g(containerId);if(!grid)return;
+  var onCount=lights.filter(function(l){return l.on;}).length;
+  var hlv=g('hub-lights-val');if(hlv)hlv.textContent=onCount+' / '+lights.length;
+  var hls=g('hub-lights-sub');if(hls)hls.textContent=onCount+' of '+lights.length+' zones on';
+  grid.innerHTML=lights.map(function(l,i){
+    return '<div style="background:'+(l.on?'rgba(245,197,24,0.06)':'var(--surface)')+';border:1px solid '+(l.on?'rgba(245,197,24,0.3)':'var(--border)')+';border-radius:8px;padding:10px;transition:all 0.2s">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
+      +'<div><div style="font-size:12px;font-weight:500">'+l.name+'</div><div style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted)">'+l.zone+'</div></div>'
+      +'<div style="width:32px;height:18px;border-radius:9px;border:1px solid '+(l.on?'var(--yellow)':'var(--border)')+';background:'+(l.on?'var(--yellow)':'var(--surface2)')+';cursor:pointer;position:relative;transition:all 0.2s" data-ltoggle="'+i+'">'
+      +'<div style="width:12px;height:12px;border-radius:50%;background:'+(l.on?'#000':'var(--muted)')+';position:absolute;top:2px;left:'+(l.on?'16':'2')+'px;transition:all 0.2s"></div>'
+      +'</div></div>'
+      +'<div style="font-size:18px;color:'+(l.on?'var(--yellow)':'var(--muted)')+';margin-bottom:6px">'+(l.on?'💡':'○')+'</div>'
+      +'<div style="display:flex;align-items:center;gap:6px">'
+      +'<input type="range" min="10" max="100" value="'+l.bright+'" data-lbright="'+i+'" style="flex:1;height:3px;accent-color:var(--yellow);opacity:'+(l.on?'1':'0.4')+'">'
+      +'<span style="font-family:DM Mono,monospace;font-size:9px;color:var(--muted);width:24px">'+(l.on?l.bright+'%':'–')+'</span>'
+      +'</div></div>';
+  }).join('');
+  grid.querySelectorAll('[data-ltoggle]').forEach(function(el){
+    el.addEventListener('click',function(){lights[parseInt(el.getAttribute('data-ltoggle'))].on=!lights[parseInt(el.getAttribute('data-ltoggle'))].on;renderAllLightGrids();});
+  });
+  grid.querySelectorAll('[data-lbright]').forEach(function(el){
+    el.addEventListener('input',function(){lights[parseInt(el.getAttribute('data-lbright'))].bright=parseInt(el.value);});
+  });
+}
+
+function renderHubLightToggles(){
+  var el=g('hub-light-toggles');if(!el)return;
+  el.innerHTML=lights.map(function(l,i){
+    return '<button data-htoggle="'+i+'" style="padding:6px 10px;border-radius:6px;border:1px solid '+(l.on?'rgba(245,197,24,0.4)':'var(--border)')+';background:'+(l.on?'var(--yellow-dim)':'var(--surface2)')+';color:'+(l.on?'var(--yellow)':'var(--muted)')+';cursor:pointer;font-family:DM Mono,monospace;font-size:10px;letter-spacing:1px;transition:all 0.15s">'+(l.on?'●':'○')+' '+l.name+'</button>';
+  }).join('');
+  el.querySelectorAll('[data-htoggle]').forEach(function(btn){
+    btn.addEventListener('click',function(){lights[parseInt(btn.getAttribute('data-htoggle'))].on=!lights[parseInt(btn.getAttribute('data-htoggle'))].on;renderAllLightGrids();});
+  });
+}
+
+function renderAllLightGrids(){
+  renderLightsGrid('lights-grid-full');
+  renderHubLightToggles();
+}
+
+function setLightScene(s){
+  if(s==='open'){lights[0].on=true;lights[2].on=true;lights[4].on=true;lights[5].on=true;lights[1].on=false;lights[3].on=false;}
+  else if(s==='work'){lights.forEach(function(l){l.on=true;});}
+  else if(s==='close'){lights.forEach(function(l,i){l.on=(i===5);});}
+  else{lights.forEach(function(l){l.on=false;});}
+  renderAllLightGrids();
+}
+
+function updateHubFinance(){
+  var d=calcWk(curWeek);
+  var hrev=g('hub-revenue');if(hrev)hrev.textContent=fmt(d.rev);
+  var hpro=g('hub-profit');if(hpro){hpro.textContent=fmtSigned(d.profit);hpro.style.color=d.profit<0?'var(--red)':'var(--blue)';}
+  var hvat=g('hub-vat');if(hvat)hvat.textContent=fmt(d.netVat);
+  // Total reserve this week (VAT + corp tax weekly + personal tax weekly)
+  var salary=parseFloat((g('tax-salary')||{}).value)||12570;
+  var taxStart=new Date((g('tax-year-start')||{}).value||((new Date().getFullYear()-1)+'-04-06'));
+  var allWks=Object.keys(db).sort().filter(function(w){return new Date(w)>=taxStart&&new Date(w)<=new Date(curWeek);});
+  var ytdR=0,ytdC=0;allWks.forEach(function(w){var dw=calcWk(w);ytdR+=dw.rev;ytdC+=dw.costTot;});
+  var we=Math.max(1,Math.round((new Date(curWeek)-taxStart)/(7*24*60*60*1000)));
+  var projP=(ytdR-ytdC)/we*52,tax=Math.max(0,projP-salary),ct=0;
+  if(tax<=50000)ct=tax*0.19;else if(tax>=250000)ct=tax*0.25;else ct=tax*0.25-(250000-tax)*(250000-50000)/250000*(0.25-0.19);
+  var divs=Math.max(0,projP-ct-salary),tDivs=Math.max(0,divs-500);
+  var ptT=(Math.max(0,salary-12570)*0.20)+(salary<=12570?0:(Math.min(salary,50270)-12570)*0.08+(salary>50270?(salary-50270)*0.02:0))+(Math.min(tDivs,Math.max(0,50270-salary))*0.0875+Math.max(0,tDivs-Math.max(0,50270-salary))*0.3375);
+  var totalReserve=d.netVat+(ct/52)+(ptT/52);
+  var hres=g('hub-reserve');if(hres)hres.textContent=fmt(totalReserve);
+  // Finance bars
+  var fb=g('hub-fin-bars');
+  if(fb){
+    if(!d.rev){fb.innerHTML='<div style="color:var(--muted);font-family:DM Mono,monospace;font-size:11px;text-align:center;padding:12px 0">Add income entries to see breakdown</div>';}
+    else{fb.innerHTML=brow('Labour',d.lab,d.rev,'var(--teal)')+brow('Parts income',d.pts,d.rev,'var(--pink)')+brow('Costs',d.costTot,d.rev,'var(--orange)');}
+  }
+  // Best cat
+  var bc=Object.keys(d.catMap).sort(function(a,b){return(d.catMap[b].labour+d.catMap[b].parts)-(d.catMap[a].labour+d.catMap[a].parts);})[0];
+  var bci=bc?CATS.find(function(c){return c.id===bc;}):null;
+  var hbc=g('hub-best-cat');if(hbc)hbc.textContent=bci?bci.icon+' '+bci.name:'–';
+  var hm=g('hub-margin');if(hm){hm.textContent=d.margin.toFixed(1)+'';hm.style.color=d.margin>=20?'var(--green)':d.margin>=10?'var(--yellow)':'var(--red)';}
+  // Hub week label
+  var hwl=g('hub-week-label');if(hwl)hwl.textContent=wkLabel(curWeek);
+  // Break-even
+  var days=parseFloat((g('be-days')||{value:'5'}).value)||5;
+  var weeks=parseFloat((g('be-weeks')||{value:'48'}).value)||48;
+  var fw=rec.monthly.reduce(function(s,r){return s+r.amount/4.33;},0)+rec.weekly.reduce(function(s,r){return s+r.amount;},0);
+  var annTot=fw*weeks+(Object.keys(db).length?Object.keys(db).reduce(function(s,w){return s+(db[w].costs||[]).filter(function(c){return !c._rec;}).reduce(function(ss,c){return ss+c.amount;},0);},0)/Math.max(1,Object.keys(db).length)*weeks:0)+salary;
+  var dc=days*weeks>0?annTot/(days*weeks):0,wTarget=dc*days,pct=wTarget>0?Math.min(100,d.rev/wTarget*100):0,surplus=d.rev-wTarget;
+  var hdc=g('hub-daily-cost');if(hdc)hdc.textContent='£'+Math.ceil(dc).toLocaleString();
+  var hwrev=g('hub-wk-rev');if(hwrev)hwrev.textContent=fmt(d.rev);
+  var hsurp=g('hub-surplus');if(hsurp){hsurp.textContent=(surplus>=0?'+£':'-£')+Math.abs(Math.round(surplus)).toLocaleString();hsurp.style.color=surplus>=0?'var(--green)':'var(--red)';}
+  var hbebar=g('hub-be-bar');if(hbebar){hbebar.style.width=pct+'%';hbebar.style.background=pct>=100?'var(--green)':pct>=60?'var(--yellow)':'var(--red)';}
+  var hbtl=g('hub-be-target-label');if(hbtl)hbtl.textContent='Weekly target: £'+Math.ceil(wTarget).toLocaleString();
+}
+
+function initControlListeners(){
+  // Shutter hub buttons
+  var hbo=g('hub-btn-open');if(hbo)hbo.addEventListener('click',function(){setShutter(100);});
+  var hbs=g('hub-btn-stop');if(hbs)hbs.addEventListener('click',stopShutter);
+  var hbc2=g('hub-btn-close');if(hbc2)hbc2.addEventListener('click',function(){setShutter(0);});
+  var hsl=g('hub-slider');if(hsl)hsl.addEventListener('input',function(){setShutter(parseInt(this.value));});
+  // Shutter page buttons
+  var sob=g('sh-open-btn');if(sob)sob.addEventListener('click',function(){setShutter(100);});
+  var sstb=g('sh-stop-btn');if(sstb)sstb.addEventListener('click',stopShutter);
+  var scb=g('sh-close-btn');if(scb)scb.addEventListener('click',function(){setShutter(0);});
+  var spsl=g('sh-page-slider');if(spsl)spsl.addEventListener('input',function(){setShutter(parseInt(this.value));});
+  document.querySelectorAll('.preset-btn').forEach(function(b){b.addEventListener('click',function(){setShutter(parseInt(b.getAttribute('data-pos')));});});
+  // Lights scenes
+  var sopen=g('scene-open');if(sopen)sopen.addEventListener('click',function(){setLightScene('open');});
+  var swork=g('scene-work');if(swork)swork.addEventListener('click',function(){setLightScene('work');});
+  var sclose=g('scene-close');if(sclose)sclose.addEventListener('click',function(){setLightScene('close');});
+  var soff=g('scene-off');if(soff)soff.addEventListener('click',function(){setLightScene('off');});
+}
+
+
+
+// ── ACQUISITION COSTS ─────────────────────────────────────────────────────────
+var ACQ_KEY = 'gfd4acq';
+var acqItems = JSON.parse(localStorage.getItem(ACQ_KEY) || '[]');
+
+var ACQ_CAT_COLORS = {
+  'Survey':'var(--blue)', 'Due Diligence':'var(--purple)',
+  'Legal':'var(--orange)', 'Accountancy':'var(--teal)',
+  'Stamp Duty':'var(--red)', 'Finance':'var(--green)',
+  'Search Fees':'var(--yellow)', 'Other':'var(--muted)'
+};
+var ACQ_CAT_ICONS = {
+  'Survey':'🏠', 'Due Diligence':'🔍', 'Legal':'⚖',
+  'Accountancy':'📊', 'Stamp Duty':'🏛', 'Finance':'💰',
+  'Search Fees':'🔎', 'Other':'📦'
+};
+
+function saveAcq() { localStorage.setItem(ACQ_KEY, JSON.stringify(acqItems)); }
+
+function addAcqCost() {
+  var desc     = (g('acq-desc')     || {}).value || '';
+  var cat      = (g('acq-cat')      || {}).value || 'Other';
+  var amount   = parseFloat((g('acq-amount')  || {}).value) || 0;
+  var date     = (g('acq-date')     || {}).value || '';
+  var supplier = (g('acq-supplier') || {}).value || '';
+  var treatment= (g('acq-treatment')|| {}).value || 'capital';
+  var status   = (g('acq-status')   || {}).value || 'paid';
+  var vatR     = (g('acq-vat-toggle') || {}).checked !== false;
+
+  desc = desc.trim(); supplier = supplier.trim();
+  if (!desc || !amount || !date) {
+    alert('Please fill in description, amount and date.');
+    return;
+  }
+  acqItems.push({ id: Date.now(), desc, cat, amount, date, supplier, treatment, status, vatR });
+  g('acq-desc').value = ''; g('acq-amount').value = ''; g('acq-supplier').value = '';
+  saveAcq(); renderAcq();
+}
+
+function delAcqCost(id) {
+  acqItems = acqItems.filter(function(i) { return i.id !== id; });
+  saveAcq(); renderAcq();
+}
+
+function renderAcq() {
+  var totalEx = 0, totalVat = 0, capitalTotal = 0, revenueTotal = 0, outstandingTotal = 0;
+  var catSpend = {};
+
+  acqItems.forEach(function(i) {
+    totalEx += i.amount;
+    if (i.vatR) totalVat += i.amount * 0.20;
+    if (i.treatment === 'capital') capitalTotal += i.amount;
+    else revenueTotal += i.amount;
+    if (i.status === 'outstanding') outstandingTotal += i.amount;
+    if (!catSpend[i.cat]) catSpend[i.cat] = 0;
+    catSpend[i.cat] += i.amount;
+  });
+
+  st('acq-total', fmt(totalEx));
+  st('acq-vat', fmt(totalVat));
+  st('acq-capital', fmt(capitalTotal));
+  st('acq-revenue', fmt(revenueTotal));
+  st('acq-outstanding', fmt(outstandingTotal));
+  st('acq-count', acqItems.length + ' item' + (acqItems.length !== 1 ? 's' : ''));
+
+  // Category breakdown
+  var cb = g('acq-cat-breakdown');
+  if (cb) {
+    if (!acqItems.length) {
+      cb.innerHTML = '<p style="color:var(--muted);font-family:DM Mono,monospace;font-size:11px;text-align:center;padding:16px 0">No costs logged yet</p>';
+    } else {
+      cb.innerHTML = Object.keys(catSpend).sort(function(a,b){ return catSpend[b]-catSpend[a]; }).map(function(cat) {
+        var c = ACQ_CAT_COLORS[cat] || 'var(--muted)';
+        return brow((ACQ_CAT_ICONS[cat]||'📦')+' '+cat, catSpend[cat], totalEx, c);
+      }).join('');
+    }
+  }
+
+  // Capital vs revenue
+  var tb = g('acq-treatment-breakdown');
+  if (tb) {
+    if (!acqItems.length) {
+      tb.innerHTML = '<p style="color:var(--muted);font-family:DM Mono,monospace;font-size:11px;text-align:center;padding:16px 0">No costs logged yet</p>';
+    } else {
+      var html = '';
+      if (capitalTotal > 0) html += brow('Capital (cost base)', capitalTotal, totalEx, 'var(--purple)');
+      if (revenueTotal > 0) html += brow('Revenue (deductible)', revenueTotal, totalEx, 'var(--teal)');
+      if (totalVat > 0) html += '<div style="border-top:1px solid var(--border);margin-top:10px;padding-top:10px;">' + brow('VAT reclaimable', totalVat, totalVat, 'var(--green)') + '</div>';
+      tb.innerHTML = html;
+    }
+  }
+
+  // Table
+  var tbody = g('acq-table-body');
+  if (!tbody) return;
+  if (!acqItems.length) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:20px">No acquisition costs logged yet</td></tr>';
+    g('acq-accountant-note').textContent = 'Log your costs above to generate a summary for your accountant.';
+    return;
+  }
+
+  var sorted = acqItems.slice().sort(function(a,b) { return new Date(a.date) - new Date(b.date); });
+  tbody.innerHTML = sorted.map(function(i) {
+    var vat = i.vatR ? i.amount * 0.20 : 0;
+    var ds = new Date(i.date).toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'});
+    var treatColor = i.treatment === 'capital' ? 'var(--purple)' : 'var(--teal)';
+    var statColor  = i.status === 'paid' ? 'var(--green)' : 'var(--yellow)';
+    var catColor   = ACQ_CAT_COLORS[i.cat] || 'var(--muted)';
+    return '<tr>'
+      + '<td>' + ds + '</td>'
+      + '<td style="font-weight:500">' + esc(i.desc) + '</td>'
+      + '<td style="color:var(--muted);font-size:11px">' + esc(i.supplier || '–') + '</td>'
+      + '<td><span style="font-family:DM Mono,monospace;font-size:9px;color:' + catColor + ';padding:2px 7px;border-radius:4px;border:1px solid ' + catColor + '">' + (ACQ_CAT_ICONS[i.cat]||'') + ' ' + i.cat + '</span></td>'
+      + '<td><span style="font-family:DM Mono,monospace;font-size:9px;color:' + treatColor + ';padding:2px 7px;border-radius:4px;background:' + treatColor.replace(')', ',0.12)').replace('var(--', 'rgba(') + '">' + (i.treatment === 'capital' ? 'Capital' : 'Revenue') + '</span></td>'
+      + '<td style="font-family:DM Mono,monospace;color:var(--blue)">' + fmt(i.amount) + '</td>'
+      + '<td style="font-family:DM Mono,monospace;color:' + (i.vatR ? 'var(--green)' : 'var(--muted)') + '">' + (i.vatR ? fmt(vat) : '–') + '</td>'
+      + '<td><span style="font-family:DM Mono,monospace;font-size:9px;color:' + statColor + ';padding:2px 7px;border-radius:4px">' + (i.status === 'paid' ? '✓ Paid' : '⏳ Outstanding') + '</span></td>'
+      + '<td><button class="cost-del" data-dacq="' + i.id + '">✕</button></td>'
+      + '</tr>';
+  }).join('');
+
+  // Accountant summary note
+  var note = g('acq-accountant-note');
+  if (note) {
+    note.innerHTML = '<strong style="color:var(--text)">Accountant summary:</strong> '
+      + 'Total acquisition spend ex-VAT: <strong style="color:var(--blue)">' + fmt(totalEx) + '</strong> · '
+      + 'Capital costs (add to cost base): <strong style="color:var(--purple)">' + fmt(capitalTotal) + '</strong> · '
+      + 'Revenue costs (deduct from profits): <strong style="color:var(--teal)">' + fmt(revenueTotal) + '</strong> · '
+      + 'Input VAT to reclaim: <strong style="color:var(--green)">' + fmt(totalVat) + '</strong>'
+      + (outstandingTotal > 0 ? ' · Outstanding (not yet paid): <strong style="color:var(--yellow)">' + fmt(outstandingTotal) + '</strong>' : '') + '.';
+  }
+}
+
+function exportAcqCSV() {
+  if (!acqItems.length) { alert('No costs to export yet.'); return; }
+  var headers = ['Date','Description','Supplier','Category','Tax Treatment','Amount (ex-VAT)','VAT (20%)','VAT Reclaimable','Status'];
+  var rows = acqItems.slice().sort(function(a,b){ return new Date(a.date)-new Date(b.date); }).map(function(i) {
+    var vat = i.vatR ? (i.amount * 0.20).toFixed(2) : '0.00';
+    var ds = new Date(i.date).toLocaleDateString('en-GB');
+    return [ds, i.desc, i.supplier||'', i.cat, i.treatment==='capital'?'Capital':'Revenue', i.amount.toFixed(2), vat, i.vatR?'Yes':'No', i.status==='paid'?'Paid':'Outstanding'].map(function(v){ return '"'+String(v).replace(/"/g,'""')+'"'; }).join(',');
+  });
+  var csv = [headers.join(',')].concat(rows).join('\n');
+  var blob = new Blob([csv], {type:'text/csv'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = 'GHM_Acquisition_Costs.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function initAcqListeners() {
+  var btn = g('btn-add-acq'); if (btn) btn.addEventListener('click', addAcqCost);
+  var exp = g('acq-export-btn'); if (exp) exp.addEventListener('click', exportAcqCSV);
+  document.addEventListener('click', function(e) {
+    var da = e.target.getAttribute('data-dacq');
+    if (da) { if (confirm('Remove this cost?')) delAcqCost(parseInt(da)); }
+  });
+  // Default date to today
+  var dt = g('acq-date'); if (dt && !dt.value) dt.valueAsDate = new Date();
+}
+
+
+// INIT — all event listeners attached here, nothing inline
+document.addEventListener('DOMContentLoaded',function(){
+
+  // Nav
+  document.querySelectorAll('[data-page]').forEach(function(n){n.addEventListener('click',function(){showPage(n.getAttribute('data-page'));});});
+
+  // Capital tracker
+  var bac2=g('btn-add-capital');if(bac2)bac2.addEventListener('click',addCapital);
+
+  // Capital AIA toggle label
+  var capAia=g('cap-aia');
+  if(capAia)capAia.addEventListener('change',function(){var lbl=g('cap-aia-label');if(lbl)lbl.textContent=this.checked?'Yes':'No (write off over time)';});
+
+  // Capital date default to today
+  var capDate=g('cap-date');if(capDate&&!capDate.value){capDate.valueAsDate=new Date();}
+
+  // Capital delete delegation handled below in existing click handler
+
+  // Week buttons
+  var wp=g('wk-prev'),wn=g('wk-next');
+  if(wp)wp.addEventListener('click',function(){var d=new Date(curWeek);d.setDate(d.getDate()-7);curWeek=wkKey(d);renderAll();});
+  if(wn)wn.addEventListener('click',function(){var d=new Date(curWeek);d.setDate(d.getDate()+7);curWeek=wkKey(d);renderAll();});
+
+  // Import / reset open
+  ['btn-open-import','income-import-btn','mob-import-btn'].forEach(function(id){var b=g(id);if(b)b.addEventListener('click',openImport);});
+  ['btn-open-reset','mob-reset-btn'].forEach(function(id){var b=g(id);if(b)b.addEventListener('click',openReset);});
+
+  // Import modal
+  var bci=g('btn-close-import'),bdi=g('btn-do-import');
+  if(bci)bci.addEventListener('click',closeImport);
+  if(bdi)bdi.addEventListener('click',doImport);
+
+  // Drop zone
+  var dz=g('drop-zone'),cf=g('csv-file');
+  if(dz)dz.addEventListener('click',function(){if(cf)cf.click();});
+  if(dz){dz.addEventListener('dragover',function(e){e.preventDefault();dz.style.borderColor='var(--green)';});dz.addEventListener('dragleave',function(){dz.style.borderColor='';});dz.addEventListener('drop',function(e){e.preventDefault();dz.style.borderColor='';if(e.dataTransfer.files[0]){var r=new FileReader();r.onload=function(ev){parseCSV(ev.target.result);};r.readAsText(e.dataTransfer.files[0]);}});}
+  if(cf)cf.addEventListener('change',function(){if(this.files[0]){var r=new FileReader();r.onload=function(e){parseCSV(e.target.result);};r.readAsText(this.files[0]);}});
+
+  // CSV paste
+  var cp=g('csv-paste');if(cp)cp.addEventListener('input',function(){if(this.value.trim())parseCSV(this.value.trim());});
+
+  // Reset modal
+  var bcr=g('btn-close-reset'),bdr=g('btn-do-reset'),rc=g('reset-confirm');
+  if(bcr)bcr.addEventListener('click',closeReset);
+  if(bdr)bdr.addEventListener('click',doReset);
+  if(rc)rc.addEventListener('input',function(){var b=g('btn-do-reset');if(b)b.style.opacity=this.value==='CLEAR'?'1':'0.4';});
+
+  // Add buttons
+  var bai=g('btn-add-income');if(bai)bai.addEventListener('click',function(){addIncome();});
+  var bac=g('btn-add-cost');if(bac)bac.addEventListener('click',addCost);
+  var bam=g('btn-add-monthly');if(bam)bam.addEventListener('click',function(){addRec('monthly');});
+  var baw=g('btn-add-weekly');if(baw)baw.addEventListener('click',function(){addRec('weekly');});
+
+  // Event delegation — dynamic rows
+  document.addEventListener('click',function(e){
+    var di=e.target.getAttribute('data-di');if(di)delIncome(parseInt(di));
+    var dc=e.target.getAttribute('data-dc');if(dc)delCost(dc);
+    var drm=e.target.getAttribute('data-drm');if(drm)delRec('monthly',parseInt(drm));
+    var drw=e.target.getAttribute('data-drw');if(drw)delRec('weekly',parseInt(drw));
+    var dcap=e.target.getAttribute('data-dcap');if(dcap)delCapital(parseInt(dcap));
+  });
+  document.addEventListener('input',function(e){
+    var id=e.target.getAttribute('data-id'),f=e.target.getAttribute('data-f');
+    if(id&&f)updIncome(parseInt(id),f,e.target.value);
+    if(e.target.id==='tax-salary'||e.target.id==='tax-year-start')renderTax();
+    if(['be-days','be-hours','be-weeks','be-rate'].indexOf(e.target.id)>=0)renderBE();
+  });
+  document.addEventListener('change',function(e){
+    var id=e.target.getAttribute('data-id'),f=e.target.getAttribute('data-f');
+    if(id&&f)updIncome(parseInt(id),f,e.target.value);
+  });
+
+  // Acquisition costs
+  initAcqListeners();
+  renderAcq();
+
+  // Staff & holiday
+  initStaffListeners();
+  renderStaff();
+
+  // Control centre listeners
+  initControlListeners();
+  renderAllLightGrids();
+  updateShutterUI();
+
+  // Start on hub
+  showPage('hub');
+  renderAll();
+  renderCapital();
+});
+</script>
+</body>
