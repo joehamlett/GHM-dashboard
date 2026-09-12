@@ -119,6 +119,54 @@ body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif
 @keyframes spin{to{transform:rotate(360deg)}} @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}} ::-webkit-scrollbar { width:4px; } ::-webkit-scrollbar-track { background:transparent; } ::-webkit-scrollbar-thumb { background:var(--border2); border-radius:2px; }
 @media (max-width:900px) { .sidebar{display:none;} .mobile-nav{display:flex;} .grid-2{grid-template-columns:1fr;} .vat-strip{grid-template-columns:1fr 1fr;} .income-entry{grid-template-columns:1fr 90px 80px 24px;} }
 @media (max-width:540px) { .main{padding:16px 14px 60px;} .kpi-grid{grid-template-columns:1fr 1fr;} .vat-strip{grid-template-columns:1fr 1fr;} }
+
+/* ── LOGIN SCREEN ── */
+#login-screen {
+  position:fixed;inset:0;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  z-index:9999;
+}
+#login-box {
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:16px;padding:40px 48px;width:380px;text-align:center;
+}
+.login-logo {
+  font-family:Bebas Neue,sans-serif;font-size:36px;
+  letter-spacing:4px;color:var(--green);margin-bottom:4px;
+}
+.login-sub {
+  font-family:DM Mono,monospace;font-size:10px;
+  letter-spacing:2px;color:var(--muted);
+  text-transform:uppercase;margin-bottom:32px;
+}
+.login-label {
+  font-family:DM Mono,monospace;font-size:9px;
+  letter-spacing:2px;color:var(--muted);
+  text-transform:uppercase;text-align:left;margin-bottom:6px;
+}
+#login-pass {
+  width:100%;background:var(--surface2);border:1px solid var(--border);
+  color:var(--text);border-radius:8px;padding:12px 14px;
+  font-family:DM Mono,monospace;font-size:14px;
+  letter-spacing:3px;margin-bottom:8px;outline:none;
+  transition:border-color 0.2s;
+}
+#login-pass:focus { border-color:var(--green); }
+#login-btn {
+  width:100%;background:var(--green);border:none;color:#000;
+  padding:12px;border-radius:8px;cursor:pointer;
+  font-family:Bebas Neue,sans-serif;font-size:18px;
+  letter-spacing:2px;margin-top:8px;transition:opacity 0.15s;
+}
+#login-btn:hover { opacity:0.85; }
+#login-error {
+  font-family:DM Mono,monospace;font-size:10px;
+  color:var(--red);min-height:16px;margin-top:6px;
+}
+.login-footer {
+  font-family:DM Mono,monospace;font-size:9px;
+  color:var(--muted);margin-top:24px;
+}
 </style>
 </head>
 <body>
@@ -144,7 +192,7 @@ body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif
   <div class="nav-item" data-page="history"><span class="nav-icon">≡</span> History</div>
   <div class="nav-item" data-page="capital"><span class="nav-icon">⬡</span> Capital Items</div>
   <div class="nav-item" data-page="acquisition"><span class="nav-icon">⊕</span> Acquisition Costs</div>
-  <div class="sidebar-footer">
+  <div class="sidebar-footer"><button onclick="logout()" style="width:100%;background:none;border:1px solid var(--border);color:var(--muted);padding:6px;border-radius:6px;cursor:pointer;font-family:DM Mono,monospace;font-size:9px;letter-spacing:1px;margin-bottom:8px">⎋ LOGOUT</button>
     <button class="action-btn" id="btn-open-import">⬆ Import Motasoft CSV</button>
     <button class="action-btn danger" id="btn-open-reset">✕ Clear All Data</button>
   </div>
@@ -918,6 +966,67 @@ body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif
 </div>
 
 <script>
+
+// ── LOGIN ─────────────────────────────────────────────────────────────────────
+var SESSION_KEY = 'ghm_session';
+
+function simpleHash(str) {
+  var hash = 0;
+  for (var i = 0; i < str.length; i++) {
+    var chr = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + chr;
+    hash |= 0;
+  }
+  return Math.abs(hash).toString(16) + str.length.toString(16) + 'ghm';
+}
+
+var CORRECT_HASH = simpleHash('GHM2026!');
+
+function checkLogin() {
+  var pass = (g('login-pass') || {}).value || '';
+  if (simpleHash(pass) === CORRECT_HASH) {
+    var expiry = Date.now() + (8 * 60 * 60 * 1000);
+    localStorage.setItem(SESSION_KEY, JSON.stringify({token: CORRECT_HASH, expiry: expiry}));
+    showApp();
+  } else {
+    var err = g('login-error');
+    if (err) err.textContent = 'Incorrect password';
+    var pe = g('login-pass');
+    if (pe) { pe.value = ''; pe.focus(); }
+  }
+}
+
+function isLoggedIn() {
+  try {
+    var s = localStorage.getItem(SESSION_KEY);
+    if (!s) return false;
+    var session = JSON.parse(s);
+    if (!session || !session.token || !session.expiry) return false;
+    if (Date.now() > session.expiry) { localStorage.removeItem(SESSION_KEY); return false; }
+    return session.token === CORRECT_HASH;
+  } catch(e) { return false; }
+}
+
+function showApp() {
+  var ls = g('login-screen'); if (ls) ls.style.display = 'none';
+  var app = g('app'); if (app) app.style.display = 'flex';
+}
+
+function logout() {
+  localStorage.removeItem(SESSION_KEY);
+  var ls = g('login-screen'); if (ls) ls.style.display = 'flex';
+  var app = g('app'); if (app) app.style.display = 'none';
+  var lp = g('login-pass'); if (lp) { lp.value = ''; lp.focus(); }
+}
+
+function initLogin() {
+  var btn = g('login-btn');
+  if (btn) btn.addEventListener('click', checkLogin);
+  var pass = g('login-pass');
+  if (pass) pass.addEventListener('keydown', function(e){ if(e.key==='Enter') checkLogin(); });
+  if (isLoggedIn()) { showApp(); } else { var app = g('app'); if (app) app.style.display = 'none'; }
+}
+
 
 // Pre-seed acquisition costs - v3
 (function(){
@@ -2019,6 +2128,9 @@ document.addEventListener('DOMContentLoaded',function(){
     var id=e.target.getAttribute('data-id'),f=e.target.getAttribute('data-f');
     if(id&&f)updIncome(parseInt(id),f,e.target.value);
   });
+
+  // Login gate
+  initLogin();
 
   // Pull latest data from Supabase, then render everything
   pullFromSupabase(function() {
